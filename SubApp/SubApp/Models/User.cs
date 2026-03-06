@@ -9,6 +9,8 @@ public class User
 {
     [Key][Column("id")] public int Id { get; set; }
     [Column("username")] public string Username { get; set; } = string.Empty;
+    [Column("first_name")] public string FirstName { get; set; } = string.Empty;
+    [Column("last_name")] public string LastName { get; set; } = string.Empty;
     [Column("password")] public string Password { get; set; } = string.Empty;
     [Column("email")] public string Email { get; set; } = string.Empty;
     [Column("is_superuser")] public bool IsSuperuser { get; set; } = false;

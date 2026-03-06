@@ -6,6 +6,7 @@ using SubApp.Models;
 using SubApp.Scripts;
 using System;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace SubApp.ViewModels.Components;
 
@@ -25,7 +26,7 @@ public partial class RegistrationUserControlViewModel : ViewModelBase
     [RelayCommand]
     public async Task RegisterAsync()
     {
-        if (string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(Password))
+        /*if (string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(Password))
         {
             RegistrationError = "Введите логин и пароль!";
 
@@ -36,44 +37,69 @@ public partial class RegistrationUserControlViewModel : ViewModelBase
             }
 
             return;
-        }
-
-        using var db = new AppDbContext();
-        using var transaction = await db.Database.BeginTransactionAsync();
+        }*/
+        
+        Console.WriteLine($"Начало регистрации пользователя: {Username}");
 
         try
-        {
-            var newUser = new User
+        {   
+            await using var db = new AppDbContext();
+
+            var exists = await db.Users.AnyAsync(u => u.Username == Username);
+            if (exists) {
+                Console.WriteLine($"Пользователь {Username} уже существует");
+                return;
+            }
+
+            await using var transaction = await db.Database.BeginTransactionAsync();
+            try
             {
-                Username = Username,
-                Email = Email,
-                Password = AuthService.HashPasswordDjango(Password),
-                DateJoined = DateTime.UtcNow,
-                IsActive = true
-            };
+                var newUser = new User
+                {
+                    Username = Username,
+                    Email = Email,
+                    Password = AuthService.HashPasswordDjango(Password),
+                    DateJoined = DateTime.UtcNow,
+                    IsActive = true,
+                    FirstName = string.Empty,
+                    LastName = string.Empty,
+                    IsStaff = false,
+                    IsSuperuser = false
+                };
 
-            db.Users.Add(newUser);
-            await db.SaveChangesAsync();
+                db.Users.Add(newUser);
+                await db.SaveChangesAsync();
+                Console.WriteLine($"User создан, ID: {newUser.Id}");
+            
+                var newProfile = new Profile
+                {
+                    UserId = newUser.Id,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
 
-            var newProfile = new Profile
+                db.Profiles.Add(newProfile);
+                await db.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+                Console.WriteLine($"Регистрация успешна для {Username}");
+
+                await AuthService.LoginAsync(Username, Password);
+
+                WeakReferenceMessenger.Default.Send(new OpenOrCloseRegistrationMessage());
+            }
+            catch (Exception ex)
             {
-                UserId = newUser.Id,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+                await transaction.RollbackAsync();
 
-            db.Profiles.Add(newProfile);
-            await db.SaveChangesAsync();
-
-            await transaction.CommitAsync();
-
-            await AuthService.LoginAsync(Username, Password);
-
-            WeakReferenceMessenger.Default.Send(new OpenOrCloseRegistrationMessage());
+                Console.WriteLine(ex);
+                throw;
+            }
+            
         }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync();
+            Console.WriteLine(ex);
             RegistrationError = "Username уже занят!";
         }
 
