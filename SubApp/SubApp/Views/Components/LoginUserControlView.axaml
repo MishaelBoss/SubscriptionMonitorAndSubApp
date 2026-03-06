@@ -1,0 +1,71 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:vm="using:SubApp.ViewModels.Components"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:LoginUserControlViewModel"
+             x:Class="SubApp.Views.Components.LoginUserControlView">
+
+    <Border Background="#0a0c0f">
+        <StackPanel VerticalAlignment="Center" 
+                    HorizontalAlignment="Center" 
+                    Width="350" 
+                    Spacing="15">
+            
+            <StackPanel Spacing="5">
+                <TextBlock Text="Имя пользователя" Foreground="#9ba1a6" FontSize="14"/>
+                <TextBox Watermark="Введите логин" 
+                         Background="#16191d" 
+                         Foreground="White"
+                         BorderThickness="1"
+                         BorderBrush="#25292e"
+                         CornerRadius="6"
+                         Padding="10,8"
+                         Text="{Binding Username}"/>
+            </StackPanel>
+
+            <StackPanel Spacing="5">
+                <TextBlock Text="Пароль" Foreground="#9ba1a6" FontSize="14"/>
+                <TextBox PasswordChar="*" 
+                         Watermark="Введите пароль"
+                         Background="#16191d" 
+                         Foreground="White"
+                         BorderThickness="1"
+                         BorderBrush="#25292e"
+                         CornerRadius="6"
+                         Padding="10,8"
+                         Text="{Binding Password}"/>
+            </StackPanel>
+
+            <Button Content="Войти" 
+                    HorizontalAlignment="Stretch" 
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Background="#7B78FF" 
+                    Foreground="White" 
+                    Height="40"
+                    Margin="0,10,0,0"
+                    CornerRadius="8"
+                    FontWeight="SemiBold"
+                    Command="{Binding LoginCommand}"/>
+
+            <TextBlock Text="{Binding ErrorMessage}" 
+                       Foreground="#FF5252" 
+                       FontSize="12" 
+                       HorizontalAlignment="Center"
+                       IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center"/>
+
+            <Button Content="Зарегистрируйтесь" 
+                    HorizontalAlignment="Center"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Foreground="#4a76fd"
+                    FontSize="12"
+                    Command="{Binding OpenRegistrationCommand}"/>
+            
+        </StackPanel>
+    </Border>
+</UserControl>

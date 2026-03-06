@@ -1,8 +1,9 @@
-using System;
-using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using Avalonia.Media;
 using SubApp.ViewModels;
+using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SubApp;
 
@@ -27,7 +28,7 @@ public class ViewLocator : IDataTemplate
             return (Control)Activator.CreateInstance(type)!;
         }
 
-        return new TextBlock { Text = "Not Found: " + name };
+        return new TextBlock { Text = "Not Found: " + name, Foreground = Brushes.White };
     }
 
     public bool Match(object? data)

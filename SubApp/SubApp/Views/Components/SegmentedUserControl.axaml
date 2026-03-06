@@ -1,0 +1,44 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:vm="using:SubApp.ViewModels.Components"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:SegmentedUserControlViewModel"
+             x:Class="SubApp.Views.Components.SegmentedUserControl">
+
+    <UserControl.Styles>
+		<StyleInclude Source="/Styles/SegmentedControlStyles.axaml"/>
+	</UserControl.Styles>
+
+    <Border VerticalAlignment="Bottom" 
+            HorizontalAlignment="Center"
+            Margin="0,0,0,15"
+            Padding="4"
+            Background="#F2F2F7"
+            CornerRadius="16"
+            ZIndex="1">
+
+        <ItemsControl ItemsSource="{Binding Buttons}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <UniformGrid Rows="1"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <RadioButton Classes="SegmentedItem"
+                                 GroupName="NavigationGroup"
+                                 Command="{Binding Command}"
+                                 IsChecked="{Binding IsSelected, Mode=TwoWay}">
+                        <StackPanel>
+                            <Image Source="{Binding IconPath}"/>
+                            <TextBlock Text="{Binding Content}"/>
+                        </StackPanel>
+                    </RadioButton>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Border>
+</UserControl>

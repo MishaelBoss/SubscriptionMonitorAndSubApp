@@ -1,14 +1,31 @@
 <UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:components="using:SubApp.Views.Components"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:SubApp.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="SubApp.Views.MainView"
+             Background="#0a0c0f"
              x:DataType="vm:MainViewModel">
-  <Design.DataContext>
-    <vm:MainViewModel />
-  </Design.DataContext>
 
-  <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Design.DataContext>
+      <vm:MainViewModel />
+    </Design.DataContext>
+
+    <Grid>
+        <ContentControl Content="{Binding OverlayContent}" ZIndex="2"/>
+
+        <Grid Grid.RowDefinitions="Auto,*">
+            <Grid Grid.Row="0">
+                <components:DashboardUserControl/>
+            </Grid>
+            <Grid Grid.Row="1">
+                <components:SegmentedUserControl/>
+        
+                <ContentControl Content="{Binding CurrentPage}" ZIndex="1"/>
+            </Grid>
+        </Grid>
+    </Grid>
+
 </UserControl>

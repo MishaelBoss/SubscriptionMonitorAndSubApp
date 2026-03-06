@@ -1,0 +1,50 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:vm="using:SubApp.ViewModels.Pages"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:HomeUserControlViewModel"
+             x:Class="SubApp.Views.Pages.HomeUserControlView">
+
+    <UserControl.Styles>
+		<StyleInclude Source="/Styles/HomePageStyles.axaml"/>
+	</UserControl.Styles>
+
+    <Grid>
+		<UniformGrid Columns="2" 
+                     Margin="12" 
+                     RowSpacing="8" 
+                     VerticalAlignment="Top" 
+                     HorizontalAlignment="Stretch">
+            <Border Classes="StatCard">
+                <StackPanel>
+                    <TextBlock Text="АКТИВНЫХ ПОДПИСОК" Classes="CardHeader"/>
+                    <TextBlock Text="2" Classes="CardValue"/>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="StatCard">
+                <StackPanel>
+                    <TextBlock Text="РАСХОДЫ В МЕСЯЦ" Classes="CardHeader"/>
+                    <TextBlock Text="3500 ₽" Classes="CardValue"/>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="StatCard">
+                <StackPanel>
+                    <TextBlock Text="РАСХОДЫ В ГОД" Classes="CardHeader"/>
+                    <TextBlock Text="42000 ₽" Classes="CardValue"/>
+                </StackPanel>
+            </Border>
+
+            <Border Classes="StatCard">
+                <StackPanel>
+                    <TextBlock Text="СКОРО СПИСАНИЕ" Classes="CardHeader" Foreground="#FF453A"/>
+                    <TextBlock Text="0" Classes="CardValue"/>
+                </StackPanel>
+            </Border>
+
+        </UniformGrid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,61 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="SubApp.Views.Components.AddOrEditNewSubscriptionUserControlView">
+
+    <ScrollViewer Background="#1E2228">
+        <StackPanel Spacing="15">
+        
+            <Border Background="#2575FC" CornerRadius="12" Padding="15,10">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                    <PathIcon Data="{StaticResource MailIconData}" Foreground="White"/>
+                    <TextBlock Text="Подключить почтовый ящик" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Email -->
+            <StackPanel Spacing="5">
+                <TextBlock Text="Email адрес" Foreground="#8E9196" FontSize="12"/>
+                <TextBox Watermark="example@gmail.com" Classes="FormInput"/>
+            </StackPanel>
+
+            <Grid ColumnDefinitions="*, 120" RowDefinitions="Auto, Auto">
+                 <!-- Провайдер -->
+                <StackPanel Grid.Column="0" Spacing="5" Margin="0,0,10,0">
+                    <TextBlock Text="Почтовый провайдер" Foreground="#8E9196" FontSize="12"/>
+                    <ComboBox HorizontalAlignment="Stretch" SelectedIndex="0" Classes="FormInput">
+                        <ComboBoxItem>Gmail</ComboBoxItem>
+                    </ComboBox>
+                </StackPanel>
+            
+                <!-- Порт -->
+                <StackPanel Grid.Column="1" Spacing="5">
+                    <TextBlock Text="IMAP порт" Foreground="#8E9196" FontSize="12"/>
+                    <TextBox Text="993" Classes="FormInput"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Сервер -->
+            <StackPanel Spacing="5">
+                <TextBlock Text="IMAP сервер" Foreground="#8E9196" FontSize="12"/>
+                <TextBox Text="imap.gmail.com" Classes="FormInput"/>
+            </StackPanel>
+
+            <!-- Пароль -->
+            <StackPanel Spacing="5">
+                <TextBlock Text="Пароль от почты" Foreground="#8E9196" FontSize="12"/>
+                <TextBox PasswordChar="*" Classes="FormInput"/>
+            </StackPanel>
+
+            <!-- Кнопки управления -->
+            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,10,0,0">
+                <Button Content="Сохранить" Classes="PrimaryBtn"/>
+                <Button Content="Отмена" Classes="SecondaryBtn" />
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollViewer>
+
+</UserControl>

@@ -1,0 +1,96 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SubApp.ViewModels.Components"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:RegistrationUserControlViewModel"
+             x:Class="SubApp.Views.Components.RegistrationUserControlView">
+
+    <Border Background="#0a0c0f">
+        <StackPanel VerticalAlignment="Center" 
+                    HorizontalAlignment="Center" 
+                    Width="350" 
+                    Spacing="12">
+            
+            <TextBlock Text="Регистрация" 
+                       Foreground="White" 
+                       FontSize="22" 
+                       FontWeight="Bold" 
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,10"/>
+
+            <StackPanel Spacing="5">
+                <TextBlock Text="Имя пользователя" Foreground="#9ba1a6" FontSize="13"/>
+                <TextBox Watermark="Придумайте логин" 
+                         Background="#16191d"
+                         BorderBrush="#25292e"
+                         CornerRadius="6" 
+                         Padding="10,8"
+                         Text="{Binding Username}"/>
+            </StackPanel>
+
+            <StackPanel Spacing="5">
+                <TextBlock Text="Email" Foreground="#9ba1a6" FontSize="13"/>
+                <TextBox Watermark="example@mail.com" 
+                         Background="#16191d" 
+                         BorderBrush="#25292e"
+                         CornerRadius="6"
+                         Padding="10,8"
+                         Text="{Binding Email}"/>
+            </StackPanel>
+
+            <StackPanel Spacing="5">
+                <TextBlock Text="Пароль" Foreground="#9ba1a6" FontSize="13"/>
+                <TextBox PasswordChar="*" 
+                         Watermark="Минимум 6 символов"
+                         Background="#16191d" 
+                         BorderBrush="#25292e"
+                         CornerRadius="6"
+                         Padding="10,8"
+                         Text="{Binding Password}"/>
+            </StackPanel>
+
+            <StackPanel Spacing="5">
+                <TextBlock Text="Подтвердите пароль" Foreground="#9ba1a6" FontSize="13"/>
+                <TextBox PasswordChar="*" 
+                         Watermark="Повторите пароль"
+                         Background="#16191d" 
+                         BorderBrush="#25292e"
+                         CornerRadius="6" 
+                         Padding="10,8"
+                         Text="{Binding ConfirmPassword}"/>
+            </StackPanel>
+
+            <TextBlock Text="{Binding RegistrationError}" 
+                       Foreground="#FF5252" 
+                       FontSize="12" 
+                       HorizontalAlignment="Center"
+                       IsVisible="{Binding RegistrationError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center"/>
+
+            <Button Content="Зарегистрироваться" 
+                    HorizontalAlignment="Stretch" 
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Background="#7B78FF" 
+                    Foreground="White" 
+                    Height="42"
+                    Margin="0,10,0,0"
+                    CornerRadius="8"
+                    FontWeight="SemiBold"
+                    Command="{Binding RegisterCommand}"/>
+
+            <Button Content="Уже есть аккаунт? Войти" 
+                    HorizontalAlignment="Center"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Foreground="#4a76fd"
+                    FontSize="12"
+                    Command="{Binding OpenLoginCommand}"/>
+            
+        </StackPanel>
+    </Border>
+
+</UserControl>

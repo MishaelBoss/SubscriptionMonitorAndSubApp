@@ -8,6 +8,7 @@
   
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
+	<AvaloniaResource Include="Data\Sqlite\db.sqlite3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,5 +21,26 @@
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" />
+    <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Serilog" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Sinks.File" />
+    <PackageReference Include="Xamarin.Essentials" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\Interfaces\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Views\Components\AddOrEditNewSubscriptionUserControlView.axaml.cs">
+      <DependentUpon>AddOrEditNewSubscriptionUserControlView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Components\AddOrEditMailboxUserControlView.axaml.cs">
+      <DependentUpon>AddOrEditMailboxUserControlView.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>
