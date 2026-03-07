@@ -47,7 +47,7 @@ public class AppDbContext : DbContext
             .WithOne()
             .HasForeignKey<Profile>(p => p.UserId);
 
-        modelBuilder.Entity<Profile>().ToTable("myapp_profile");
+        modelBuilder.Entity<Profile>().ToTable("accounts_profile");
         modelBuilder.Entity<User>().ToTable("auth_user");
         modelBuilder.Entity<Mailbox>().ToTable("myapp_mailbox");
         modelBuilder.Entity<Subscription>().ToTable("subscriptions_subscription");

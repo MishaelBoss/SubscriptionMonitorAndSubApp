@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SubApp.Models;
 
-[Table("myapp_profile")]
+[Table("accounts_profile")]
 public class Profile
 {
     [Key][Column("id")] public int Id { get; set; }
