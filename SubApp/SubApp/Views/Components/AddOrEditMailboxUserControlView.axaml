@@ -1,8 +1,83 @@
 <UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:vm="using:SubApp.ViewModels.Components"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:AddOrEditMailboxUserControlViewModel"
              x:Class="SubApp.Views.Components.AddOrEditMailboxUserControlView">
-  Welcome to Avalonia!
+    
+    <UserControl.Styles>
+        <StyleInclude Source="/Styles/AddOrEditMailboxStyles.axaml"/>
+    </UserControl.Styles>
+    
+    <ScrollViewer Background="#121212">
+        <Grid RowDefinitions="Auto,*">
+            <Grid Grid.Row="0">
+                <Button Background="Transparent" 
+                        BorderThickness="0" 
+                        Padding="5" 
+                        Margin="10,0,0,0"
+                        Command="{Binding CloseCommand}">
+                    <Image Source="/Assets/back-64.png" Width="32" Height="32"/>
+                </Button>
+            </Grid>
+
+            <Grid Grid.Row="1">
+                <StackPanel Margin="16" Spacing="20">
+                    <Border Background="#1C1C1E" CornerRadius="12" Padding="16">
+                        <StackPanel Spacing="15">
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="EMAIL АДРЕС" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
+                                <TextBox Text="adadasd@gmil.com" Classes="ModernInput"/>
+                            </StackPanel>
+
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="ПАРОЛЬ ОТ ПОЧТЫ" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
+                                <TextBox PasswordChar="●" Text="password" Classes="ModernInput"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="#1C1C1E" CornerRadius="12" Padding="16">
+                        <StackPanel Spacing="15">
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="ПОЧТОВЫЙ ПРОВАЙДЕР" FontSize="11" FontWeight="Bold" Foreground="#8E8E93" />
+                                <ComboBox HorizontalAlignment="Stretch" 
+                                          Classes="ModernCombo"
+                                          SelectedIndex="0">
+                                    <ComboBoxItem>Gmail</ComboBoxItem>
+                                    <ComboBoxItem>Yandex</ComboBoxItem>
+                                    <ComboBoxItem>Mail.ru</ComboBoxItem>
+                                    <ComboBoxItem>Outlook</ComboBoxItem>
+                                    <ComboBoxItem>Другой (IMAP)</ComboBoxItem>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <Grid ColumnDefinitions="*, 100" ColumnSpacing="12">
+                                <StackPanel Spacing="5">
+                                    <TextBlock Text="IMAP СЕРВЕР" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
+                                    <TextBox Text="imap.gmail.com" Classes="ModernInput"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="5">
+                                    <TextBlock Text="ПОРТ" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
+                                    <TextBox Text="993" Classes="ModernInput"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="ЧАСТОТА ПРОВЕРКИ (МИН)" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
+                                <TextBox Text="60" Classes="ModernInput"/>
+                            </StackPanel>
+
+                            <CheckBox IsChecked="True" Margin="0,5">
+                                <TextBlock Text="Автоматическая проверка" Foreground="#8E8E93" FontSize="13"/>
+                            </CheckBox>
+                        </StackPanel>
+                    </Border>
+                    <Button Classes="PrimaryButton" Content="Сохранить изменения" HorizontalAlignment="Stretch"/>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
 </UserControl>

@@ -5,13 +5,16 @@
                 <Setter Property="Foreground" Value="White"/>
                 <Setter Property="Background" Value="#16191d"/>
         </Style>
+        
         <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
                 <Setter Property="Background" Value="#1c1f24"/>
         </Style>
+        
         <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
                 <Setter Property="Background" Value="#16191d"/>
                 <Setter Property="BorderBrush" Value="#7B78FF"/>
         </Style>
+        
         <Style Selector="TextBox:focus">
                 <Setter Property="Foreground" Value="White"/>
         </Style>

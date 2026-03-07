@@ -11,10 +11,8 @@
 		<StyleInclude Source="/Styles/DashboardStyles.axaml"/>
 	</UserControl.Styles>
 
-    <Border Background="#0a0c0f" 
-            HorizontalAlignment="Stretch" 
-            VerticalAlignment="Stretch">
-        <Grid Grid.RowDefinitions="Auto,*">
+    <Border Background="#0a0c0f">
+        <Grid RowDefinitions="Auto,*">
             <Grid Grid.Row="0">
                 <Border VerticalAlignment="Top" 
                         HorizontalAlignment="Stretch"

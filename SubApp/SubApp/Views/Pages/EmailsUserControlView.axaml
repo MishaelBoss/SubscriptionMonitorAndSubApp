@@ -6,5 +6,68 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="vm:EmailsUserControlViewModel"
              x:Class="SubApp.Views.Pages.EmailsUserControlView">
-  Welcome to Avalonia!
+    
+    <UserControl.Styles>
+        <StyleInclude Source="/Styles/EmailsStyles.axaml"/>
+    </UserControl.Styles>
+    
+     <ScrollViewer>
+        <StackPanel Margin="12" Spacing="15">
+            <Border Classes="ContentCard">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Подключенные почтовые ящики" Classes="SectionHeader"/>
+                    <Separator Background="#2C2C2E" Height="1"/>
+
+                    <Border Background="White" CornerRadius="18" Padding="15" Margin="0,5">
+                        <StackPanel Spacing="12">
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Text="adadasd@gmail.com" 
+                                           FontWeight="Bold" 
+                                           FontSize="16" 
+                                           Foreground="Black" />
+                                <TextBlock Grid.Column="1" 
+                                           Text="Никогда" 
+                                           Foreground="#8E8E93" 
+                                           FontSize="12" />
+                            </Grid>
+
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Border Background="#4A90E2" CornerRadius="6" Padding="8,3">
+                                    <TextBlock Text="Gmail" FontSize="11" Foreground="White" />
+                                </Border>
+                                <Border Background="#00C7AC" CornerRadius="6" Padding="8,3">
+                                    <TextBlock Text="Активен" FontSize="11" Foreground="White" />
+                                </Border>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Spacing="10">
+                                <Button Classes="ActionButton Start" Width="45" Height="35">
+                                    <Image Source="/Assets/play-64.png" Width="14" Height="14"/>
+                                </Button>
+                                
+                                <Button Classes="ActionButton Fast" Width="45" Height="35">
+                                    <Image Source="/Assets/fust-play-64.png" Width="14" Height="14"/>
+                                </Button>
+
+                                <Button Classes="IconButton Edit" Width="45" Height="35">
+                                    <Image Source="/Assets/edit-64.png" Width="14" Height="14"/>
+                                </Button>
+
+                                <Button Classes="IconButton Delete" Width="45" Height="35">
+                                    <Image Source="/Assets/trash-64.png" Width="14" Height="14"/>
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Button HorizontalAlignment="Center" Margin="0,10,0,5" Classes="AddButton" Command="{Binding OpenAddEmailCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <Image Source="/Assets/add-white-64.png" Width="18"/>
+                            <TextBlock Text="Добавить почту" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

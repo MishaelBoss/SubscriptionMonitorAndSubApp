@@ -21,9 +21,9 @@
                 <components:DashboardUserControl/>
             </Grid>
             <Grid Grid.Row="1">
-                <components:SegmentedUserControl/>
+                <components:SegmentedUserControl ZIndex="1"/>
         
-                <ContentControl Content="{Binding CurrentPage}" ZIndex="1"/>
+                <ContentControl Content="{Binding CurrentPage}" ZIndex="0"/>
             </Grid>
         </Grid>
     </Grid>

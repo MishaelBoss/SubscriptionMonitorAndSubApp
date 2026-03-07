@@ -11,40 +11,80 @@
 		<StyleInclude Source="/Styles/HomePageStyles.axaml"/>
 	</UserControl.Styles>
 
-    <Grid>
-		<UniformGrid Columns="2" 
-                     Margin="12" 
-                     RowSpacing="8" 
-                     VerticalAlignment="Top" 
-                     HorizontalAlignment="Stretch">
-            <Border Classes="StatCard">
-                <StackPanel>
-                    <TextBlock Text="АКТИВНЫХ ПОДПИСОК" Classes="CardHeader"/>
-                    <TextBlock Text="2" Classes="CardValue"/>
+    <ScrollViewer>
+        <StackPanel Margin="12" Spacing="15">
+            
+            <UniformGrid Columns="2" RowSpacing="8" ColumnSpacing="8">
+                <Border Classes="StatCard">
+                    <StackPanel>
+                        <TextBlock Text="АКТИВНЫХ ПОДПИСОК" Classes="CardHeader"/>
+                        <TextBlock Text="2" Classes="CardValue"/>
+                    </StackPanel>
+                </Border>
+                <Border Classes="StatCard">
+                    <StackPanel>
+                        <TextBlock Text="РАСХОДЫ В МЕСЯЦ" Classes="CardHeader"/>
+                        <TextBlock Text="3500 ₽" Classes="CardValue"/>
+                    </StackPanel>
+                </Border>
+                <Border Classes="StatCard">
+                    <StackPanel>
+                        <TextBlock Text="РАСХОДЫ В ГОД" Classes="CardHeader"/>
+                        <TextBlock Text="42000 ₽" Classes="CardValue"/>
+                    </StackPanel>
+                </Border>
+                <Border Classes="StatCard">
+                    <StackPanel>
+                        <TextBlock Text="СКОРО СПИСАНИЕ" Classes="CardHeader" Foreground="#FF453A"/>
+                        <TextBlock Text="0" Classes="CardValue"/>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <Border Classes="ContentCard">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Последние платежи" Classes="SectionHeader"/>
+                    <Separator Background="#2C2C2E" Height="1"/>
+                    
+                    <StackPanel HorizontalAlignment="Center" Margin="0,20" Spacing="10">
+                        <PathIcon Data="{StaticResource BoxIcon}" Opacity="0.5"/>
+                        <TextBlock Text="Нет платежей" Foreground="#8E8E93" HorizontalAlignment="Center"/>
+                    </StackPanel>
                 </StackPanel>
             </Border>
 
-            <Border Classes="StatCard">
-                <StackPanel>
-                    <TextBlock Text="РАСХОДЫ В МЕСЯЦ" Classes="CardHeader"/>
-                    <TextBlock Text="3500 ₽" Classes="CardValue"/>
+            <Border Classes="ContentCard">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Активные подписки" Classes="SectionHeader"/>
+                    <Separator Background="#2C2C2E" Height="1"/>
+
+                    <Border Background="#F2F2F7" CornerRadius="10" Padding="12,8">
+                        <Grid ColumnDefinitions="Auto, *, Auto, Auto">
+                            <Border Grid.Column="0" Background="#4A90E2" CornerRadius="15" Padding="8,4">
+                                <TextBlock Text="Zero+" Foreground="White" FontSize="12" FontWeight="Bold"/>
+                            </Border>
+                            
+                            <TextBlock Grid.Column="1" Text="1500,00 RUB" FontWeight="Bold" 
+                                       VerticalAlignment="Center" Margin="15,0,0,0"/>
+                            
+                            <TextBlock Grid.Column="2" Text="08.03.2026" Foreground="#8E8E93" 
+                                       VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            
+                            <Border Grid.Column="3" Background="#FFD60A" CornerRadius="10" Padding="6,2" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock Text="1 дн." Foreground="Black" FontSize="11"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <Button HorizontalAlignment="Center" Margin="0,5" Classes="AddButton">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <Image Source="/Assets/add-white-64.png" Width="20"/>
+                            <TextBlock Text="Добавить подписку"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </Border>
 
-            <Border Classes="StatCard">
-                <StackPanel>
-                    <TextBlock Text="РАСХОДЫ В ГОД" Classes="CardHeader"/>
-                    <TextBlock Text="42000 ₽" Classes="CardValue"/>
-                </StackPanel>
-            </Border>
-
-            <Border Classes="StatCard">
-                <StackPanel>
-                    <TextBlock Text="СКОРО СПИСАНИЕ" Classes="CardHeader" Foreground="#FF453A"/>
-                    <TextBlock Text="0" Classes="CardValue"/>
-                </StackPanel>
-            </Border>
-
-        </UniformGrid>
-    </Grid>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

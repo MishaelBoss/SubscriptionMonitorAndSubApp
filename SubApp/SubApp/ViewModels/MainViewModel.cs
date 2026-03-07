@@ -13,7 +13,8 @@ public partial class MainViewModel : ViewModelBase,
     IRecipient<OpenAnalyticsPageMessage>,
     IRecipient<OpenOrCloseProfileMessage>,
     IRecipient<OpenOrCloseLoginMessage>,
-    IRecipient<OpenOrCloseRegistrationMessage>
+    IRecipient<OpenOrCloseRegistrationMessage>,
+    IRecipient<OpenOrCloseAddOrEditEmailMessage>
 {
     [ObservableProperty] private ViewModelBase? _currentPage;
     [ObservableProperty] private ViewModelBase? _overlayContent;
@@ -26,6 +27,7 @@ public partial class MainViewModel : ViewModelBase,
     private readonly ProfileUserControlViewModel _profileUserControlViewModel = new();
     private readonly LoginUserControlViewModel _loginUserControlViewModel = new();
     private readonly RegistrationUserControlViewModel _registrationUserControlViewModel = new();
+    private readonly AddOrEditMailboxUserControlViewModel _addOrEditMailboxUserControlViewModel = new();
 
     public MainViewModel() 
     {
@@ -61,14 +63,17 @@ public partial class MainViewModel : ViewModelBase,
 
     public void Receive(OpenOrCloseLoginMessage message)
     {
-        if (OverlayContent is LoginUserControlViewModel) OverlayContent = null;
-        else OverlayContent = _loginUserControlViewModel;
+        OverlayContent = OverlayContent is LoginUserControlViewModel ? null : _loginUserControlViewModel;
     }
 
     public void Receive(OpenOrCloseRegistrationMessage message)
     {
-        if (OverlayContent is RegistrationUserControlViewModel) OverlayContent = null;
-        else OverlayContent = _registrationUserControlViewModel;
+        OverlayContent = OverlayContent is RegistrationUserControlViewModel ? null : _registrationUserControlViewModel;
+    }
+    
+    public void Receive(OpenOrCloseAddOrEditEmailMessage message)
+    {
+        OverlayContent = OverlayContent is AddOrEditMailboxUserControlViewModel ? null : _addOrEditMailboxUserControlViewModel;
     }
 
     ~MainViewModel() 
