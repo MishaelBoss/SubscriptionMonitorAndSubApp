@@ -47,6 +47,7 @@ public partial class RegistrationUserControlViewModel : ViewModelBase
 
             var exists = await db.Users.AnyAsync(u => u.Username == Username);
             if (exists) {
+                RegistrationError = $"Пользователь {Username} уже существует";
                 Console.WriteLine($"Пользователь {Username} уже существует");
                 return;
             }

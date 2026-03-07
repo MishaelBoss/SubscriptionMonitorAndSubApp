@@ -1,4 +1,5 @@
-﻿using Avalonia.Platform;
+﻿using Avalonia.Controls;
+using Avalonia.Platform;
 using Microsoft.EntityFrameworkCore;
 using SubApp.Models;
 using System;
@@ -21,10 +22,14 @@ public class AppDbContext : DbContext
 
         if (OperatingSystem.IsAndroid())
         {
-            dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), dbName);
+            string folder = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            dbPath = Path.Combine(folder, dbName);
 
             if (!File.Exists(dbPath))
             {
+                string? directory = Path.GetDirectoryName(dbPath);
+                if (!Directory.Exists(directory)) Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
+
                 var assetUri = new Uri("avares://SubApp/Data/Sqlite/db.sqlite3");
                 using var assetStream = AssetLoader.Open(assetUri);
                 using var fileStream = File.Create(dbPath);

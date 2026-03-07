@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -33,7 +34,7 @@ public partial class CartMailboxesViewModel(long id) : ViewModelBase
     }
         
     [RelayCommand]
-    public async void OpenDeleteEmail()
+    public async Task OpenDeleteEmail()
     {
         try
         {
