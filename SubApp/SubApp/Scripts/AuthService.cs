@@ -18,7 +18,7 @@ public static class AuthService
     {
         try
         {
-            using var db = new AppDbContext();
+            await using var db = new AppDbContext();
 
             var user = await db.Users.FirstOrDefaultAsync(u => u.Username == username);
             if (user == null) return false;
@@ -31,7 +31,7 @@ public static class AuthService
 
             return true;
         }
-        catch (Exception ex)
+        catch
         {
             return false;
         }
@@ -42,10 +42,10 @@ public static class AuthService
         try
         {
             var userIdStr = await SecureStorage.GetAsync("current_user_id");
-            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
                 return false;
 
-            using var db = new AppDbContext();
+            await using var db = new AppDbContext();
             var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null) return false;
@@ -64,6 +64,7 @@ public static class AuthService
         SecureStorage.Remove("current_user_id");
         CurrentSession = null;
         WeakReferenceMessenger.Default.Send(new OpenOrCloseLoginMessage());
+        WeakReferenceMessenger.Default.Send(new UserLoggedInMessage());
     }
 
     private static bool VerifyDjangoPassword(string password, string djangoHash)
@@ -73,12 +74,12 @@ public static class AuthService
             var parts = djangoHash.Split('$');
             if (parts.Length != 4) return false;
 
-            int iterations = int.Parse(parts[1]);
-            string salt = parts[2];
-            string hash = parts[3];
+            var iterations = int.Parse(parts[1]);
+            var salt = parts[2];
+            var hash = parts[3];
 
-            byte[] saltBytes = System.Text.Encoding.UTF8.GetBytes(salt);
-            byte[] derived = KeyDerivation.Pbkdf2(
+            var saltBytes = System.Text.Encoding.UTF8.GetBytes(salt);
+            var derived = KeyDerivation.Pbkdf2(
                 password: password,
                 salt: saltBytes,
                 prf: KeyDerivationPrf.HMACSHA256,

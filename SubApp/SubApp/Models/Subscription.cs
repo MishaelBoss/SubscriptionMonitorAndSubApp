@@ -14,8 +14,5 @@ public class Subscription
     [Column("next_payment_date")] public DateTime NextPaymentDate { get; set; }
     [Column("status")] public string Status { get; set; }
     [Column("user_id")] public int UserId { get; set; }
-
-    // Логика просрочки (аналог вашего @property в Django)
-    [NotMapped]
-    public bool IsOverdue => Status == "active" && NextPaymentDate < DateTime.Today;
+    [NotMapped] public bool IsOverdue => Status == "active" && NextPaymentDate < DateTime.Today;
 }

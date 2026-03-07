@@ -1,5 +1,5 @@
 ﻿namespace SubApp.Scripts;
 
-public record UserSession(long Id, string Login)
+public record UserSession(long Id, string Username)
 {
 }

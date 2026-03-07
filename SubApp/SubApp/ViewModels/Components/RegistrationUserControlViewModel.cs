@@ -26,18 +26,18 @@ public partial class RegistrationUserControlViewModel : ViewModelBase
     [RelayCommand]
     public async Task RegisterAsync()
     {
-        /*if (string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(Password))
+        if (string.IsNullOrEmpty(Username) || string.IsNullOrEmpty(Password))
         {
             RegistrationError = "Введите логин и пароль!";
 
-            if (Password != ConfirmPassword)
-            {
-                RegistrationError = "Пароли не совпадают!";
-                return;
-            }
-
             return;
-        }*/
+        }
+        
+        if (Password != ConfirmPassword)
+        {
+            RegistrationError = "Пароли не совпадают!";
+            return;
+        }
         
         Console.WriteLine($"Начало регистрации пользователя: {Username}");
 
@@ -87,6 +87,7 @@ public partial class RegistrationUserControlViewModel : ViewModelBase
                 await AuthService.LoginAsync(Username, Password);
 
                 WeakReferenceMessenger.Default.Send(new OpenOrCloseRegistrationMessage());
+                WeakReferenceMessenger.Default.Send(new UserLoggedInMessage());
             }
             catch (Exception ex)
             {

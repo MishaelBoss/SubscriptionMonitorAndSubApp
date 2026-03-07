@@ -25,10 +25,10 @@ public partial class LoginUserControlViewModel : ViewModelBase
             return;
         }
 
-        bool success = await AuthService.LoginAsync(Username, Password);
-        if (success)
+        if (await AuthService.LoginAsync(Username, Password))
         {
             WeakReferenceMessenger.Default.Send(new OpenOrCloseLoginMessage());
+            WeakReferenceMessenger.Default.Send(new UserLoggedInMessage());
             ClearForm();
         }
         else
