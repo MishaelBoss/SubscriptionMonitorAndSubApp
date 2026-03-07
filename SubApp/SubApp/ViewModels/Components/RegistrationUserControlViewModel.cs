@@ -91,10 +91,8 @@ public partial class RegistrationUserControlViewModel : ViewModelBase
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-
                 Console.WriteLine(ex);
-                throw;
+                await transaction.RollbackAsync();
             }
             
         }

@@ -39,6 +39,12 @@
         <Setter Property="Opacity" Value="0.8"/>
     </Style>
     
+    <Style Selector="Button.PrimaryButton:disabled /template/ ContentPresenter">
+        <Setter Property="Background" Value="#3A3A3C" />
+        <Setter Property="Foreground" Value="#8E8E93" />
+        <Setter Property="Opacity" Value="0.6" /> 
+    </Style>
+    
     <Style Selector="ComboBox.ModernCombo">
         <Setter Property="Background" Value="#2C2C2E" />
         <Setter Property="Foreground" Value="White" />
@@ -76,6 +82,34 @@
 
     <Style Selector="ComboBox.ModernCombo ComboBoxItem:selected /template/ ContentPresenter">
         <Setter Property="Background" Value="#7B78FF" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+    
+    <Style Selector="NumericUpDown.ModernNumeric">
+        <Setter Property="Background" Value="#2C2C2E" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="MinHeight" Value="45" />
+        <Setter Property="ShowButtonSpinner" Value="False" />
+    </Style>
+    
+    <Style Selector="NumericUpDown.ModernNumeric /template/ TextBox#PART_TextBox">
+        <Setter Property="Background" Value="#2C2C2E" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    
+    <Style Selector="NumericUpDown.ModernNumeric /template/ TextBox#PART_TextBox:focus /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="#16191d" />
+        <Setter Property="BorderBrush" Value="#7B78FF" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+
+    <Style Selector="NumericUpDown.ModernNumeric /template/ TextBox#PART_TextBox:focus">
         <Setter Property="Foreground" Value="White" />
     </Style>
 </Styles>

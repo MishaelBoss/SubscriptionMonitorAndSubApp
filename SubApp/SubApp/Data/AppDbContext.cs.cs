@@ -11,6 +11,7 @@ public class AppDbContext : DbContext
     public DbSet<Profile> Profiles { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Mailbox> Mailboxes { get; set; }
+    public DbSet<ParsedEmail> ParsedEmails { get; set; }
     public DbSet<Subscription> Subscriptions { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
@@ -49,7 +50,8 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<Profile>().ToTable("accounts_profile");
         modelBuilder.Entity<User>().ToTable("auth_user");
-        modelBuilder.Entity<Mailbox>().ToTable("myapp_mailbox");
+        modelBuilder.Entity<Mailbox>().ToTable("mail_parser_mailbox");
+        modelBuilder.Entity<ParsedEmail>().ToTable("mail_parser_parsedemail");
         modelBuilder.Entity<Subscription>().ToTable("subscriptions_subscription");
     }
 }

@@ -1,0 +1,48 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        
+        <Style Selector="ComboBox.ModernCombo">
+                <Setter Property="Background" Value="#2C2C2E" />
+                <Setter Property="Foreground" Value="White" />
+                <Setter Property="BorderBrush" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="MinHeight" Value="45" />
+                <Setter Property="Padding" Value="12,0" />
+                <Setter Property="HorizontalContentAlignment" Value="Left" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        
+        <Style Selector="ComboBox.ModernCombo /template/ Border#Background">
+                <Setter Property="BorderBrush" Value="#2d343d"/>
+                <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+    
+        <Style Selector="ComboBox.ModernCombo:focus /template/ Border#Background">
+                <Setter Property="BorderBrush" Value="#7B78FF"/>
+                <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <Style Selector="ComboBox.ModernCombo ComboBoxItem">
+                <Setter Property="Padding" Value="12"/>
+                <Setter Property="Background" Value="#2C2C2E"/>
+                <Setter Property="Foreground" Value="White"/>
+        </Style>
+    
+        <Style Selector="ComboBox.ModernCombo /template/ Popup Border">
+                <Setter Property="Background" Value="#2C2C2E" />
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="BorderBrush" Value="#3A3A3C" />
+                <Setter Property="BorderThickness" Value="1" />
+        </Style>
+
+        <Style Selector="ComboBox.ModernCombo ComboBoxItem:pointerover /template/ ContentPresenter">
+                <Setter Property="Background" Value="#3A3A3C" />
+                <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <Style Selector="ComboBox.ModernCombo ComboBoxItem:selected /template/ ContentPresenter">
+                <Setter Property="Background" Value="#7B78FF" />
+                <Setter Property="Foreground" Value="White" />
+        </Style>
+</Styles>

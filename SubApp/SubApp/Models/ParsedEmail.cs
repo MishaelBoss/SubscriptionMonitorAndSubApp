@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SubApp.Models;
 
-[Table("mail_parsedemail")]
+[Table("mail_parser_parsedemail")]
 public class ParsedEmail
 {
     [Key][Column("id")] public int Id { get; set; }

@@ -6,5 +6,23 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="vm:SubscriptionsUserControlViewModel"
              x:Class="SubApp.Views.Pages.SubscriptionsUserControlView">
-  Welcome to Avalonia!
+    
+    <UserControl.Styles>
+        <StyleInclude Source="/Styles/SubscriptionsStyles.axaml"/>
+    </UserControl.Styles>
+    
+    <ScrollViewer Padding="15">
+        <Grid RowDefinitions="Auto,*">
+            <Grid Grid.Row="0">
+                <ComboBox HorizontalAlignment="Stretch" 
+                          Classes="ModernCombo"
+                          ItemsSource="{Binding Status}"
+                          SelectedItem="{Binding SelectedStatus}">
+                </ComboBox>
+            </Grid>
+
+            <Grid Grid.Row="1">
+            </Grid>
+        </Grid>
+    </ScrollViewer>
 </UserControl>

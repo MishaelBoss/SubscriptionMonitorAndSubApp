@@ -5,13 +5,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="vm:AddOrEditMailboxUserControlViewModel"
+             Background="#0a0c0f"
              x:Class="SubApp.Views.Components.AddOrEditMailboxUserControlView">
     
     <UserControl.Styles>
         <StyleInclude Source="/Styles/AddOrEditMailboxStyles.axaml"/>
     </UserControl.Styles>
     
-    <ScrollViewer Background="#121212">
+    <ScrollViewer>
         <Grid RowDefinitions="Auto,*">
             <Grid Grid.Row="0">
                 <Button Background="Transparent" 
@@ -29,12 +30,12 @@
                         <StackPanel Spacing="15">
                             <StackPanel Spacing="5">
                                 <TextBlock Text="EMAIL АДРЕС" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
-                                <TextBox Text="adadasd@gmil.com" Classes="ModernInput"/>
+                                <TextBox Text="{Binding Email}" Classes="ModernInput"/>
                             </StackPanel>
 
                             <StackPanel Spacing="5">
                                 <TextBlock Text="ПАРОЛЬ ОТ ПОЧТЫ" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
-                                <TextBox PasswordChar="●" Text="password" Classes="ModernInput"/>
+                                <TextBox PasswordChar="●" Text="{Binding Password}" Classes="ModernInput"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -45,29 +46,35 @@
                                 <TextBlock Text="ПОЧТОВЫЙ ПРОВАЙДЕР" FontSize="11" FontWeight="Bold" Foreground="#8E8E93" />
                                 <ComboBox HorizontalAlignment="Stretch" 
                                           Classes="ModernCombo"
-                                          SelectedIndex="0">
-                                    <ComboBoxItem>Gmail</ComboBoxItem>
-                                    <ComboBoxItem>Yandex</ComboBoxItem>
-                                    <ComboBoxItem>Mail.ru</ComboBoxItem>
-                                    <ComboBoxItem>Outlook</ComboBoxItem>
-                                    <ComboBoxItem>Другой (IMAP)</ComboBoxItem>
+                                          ItemsSource="{Binding MailProviders}"
+                                          SelectedItem="{Binding SelectedProvider}">
                                 </ComboBox>
                             </StackPanel>
 
                             <Grid ColumnDefinitions="*, 100" ColumnSpacing="12">
                                 <StackPanel Spacing="5">
                                     <TextBlock Text="IMAP СЕРВЕР" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
-                                    <TextBox Text="imap.gmail.com" Classes="ModernInput"/>
+                                    <TextBox Text="{Binding ImapServer}" Classes="ModernInput"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Spacing="5">
                                     <TextBlock Text="ПОРТ" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
-                                    <TextBox Text="993" Classes="ModernInput"/>
+                                    <NumericUpDown Value="{Binding ImapPort}" 
+                                                   Minimum="1" 
+                                                   Maximum="65535" 
+                                                   Increment="1"
+                                                   FormatString="0"
+                                                   ShowButtonSpinner="False"
+                                                   Classes="ModernNumeric"/>
                                 </StackPanel>
                             </Grid>
 
                             <StackPanel Spacing="5">
                                 <TextBlock Text="ЧАСТОТА ПРОВЕРКИ (МИН)" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
-                                <TextBox Text="60" Classes="ModernInput"/>
+                                <NumericUpDown Value="{Binding FrequencyCheck}" 
+                                               Minimum="1" 
+                                               Maximum="1440" 
+                                               ShowButtonSpinner="False"
+                                               Classes="ModernNumeric"/>
                             </StackPanel>
 
                             <CheckBox IsChecked="True" Margin="0,5">
@@ -75,7 +82,14 @@
                             </CheckBox>
                         </StackPanel>
                     </Border>
-                    <Button Classes="PrimaryButton" Content="Сохранить изменения" HorizontalAlignment="Stretch"/>
+                    <TextBlock Text="{Binding ErrorEmail}" 
+                               Foreground="#FF5252" 
+                               FontSize="12" 
+                               HorizontalAlignment="Center"
+                               IsVisible="{Binding ErrorEmail, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"/>
+                    <Button Classes="PrimaryButton" Content="Сохранить изменения" HorizontalAlignment="Stretch" IsEnabled="{Binding IsActiveConfirmButton}" Command="{Binding AddEmailCommand}"/>
                 </StackPanel>
             </Grid>
         </Grid>
