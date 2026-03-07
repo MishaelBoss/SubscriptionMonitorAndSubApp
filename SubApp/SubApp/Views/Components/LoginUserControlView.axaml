@@ -6,6 +6,10 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="vm:LoginUserControlViewModel"
              x:Class="SubApp.Views.Components.LoginUserControlView">
+    
+    <UserControl.Styles>
+        <StyleInclude Source="/Styles/AuthorizationStyles.axaml"/>
+    </UserControl.Styles>
 
     <Border Background="#0a0c0f">
         <StackPanel VerticalAlignment="Center" 
@@ -16,8 +20,7 @@
             <StackPanel Spacing="5">
                 <TextBlock Text="Имя пользователя" Foreground="#9ba1a6" FontSize="14"/>
                 <TextBox Watermark="Введите логин" 
-                         Background="#16191d" 
-                         Foreground="White"
+                         CaretBrush="White"
                          BorderThickness="1"
                          BorderBrush="#25292e"
                          CornerRadius="6"
@@ -29,8 +32,6 @@
                 <TextBlock Text="Пароль" Foreground="#9ba1a6" FontSize="14"/>
                 <TextBox PasswordChar="*" 
                          Watermark="Введите пароль"
-                         Background="#16191d" 
-                         Foreground="White"
                          BorderThickness="1"
                          BorderBrush="#25292e"
                          CornerRadius="6"

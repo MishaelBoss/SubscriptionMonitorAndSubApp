@@ -6,6 +6,10 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="vm:RegistrationUserControlViewModel"
              x:Class="SubApp.Views.Components.RegistrationUserControlView">
+    
+    <UserControl.Styles>
+        <StyleInclude Source="/Styles/AuthorizationStyles.axaml"/>
+    </UserControl.Styles>
 
     <Border Background="#0a0c0f">
         <StackPanel VerticalAlignment="Center" 
@@ -23,7 +27,6 @@
             <StackPanel Spacing="5">
                 <TextBlock Text="Имя пользователя" Foreground="#9ba1a6" FontSize="13"/>
                 <TextBox Watermark="Придумайте логин" 
-                         Background="#16191d"
                          BorderBrush="#25292e"
                          CornerRadius="6" 
                          Padding="10,8"
@@ -33,7 +36,6 @@
             <StackPanel Spacing="5">
                 <TextBlock Text="Email" Foreground="#9ba1a6" FontSize="13"/>
                 <TextBox Watermark="example@mail.com" 
-                         Background="#16191d" 
                          BorderBrush="#25292e"
                          CornerRadius="6"
                          Padding="10,8"
@@ -44,7 +46,6 @@
                 <TextBlock Text="Пароль" Foreground="#9ba1a6" FontSize="13"/>
                 <TextBox PasswordChar="*" 
                          Watermark="Минимум 6 символов"
-                         Background="#16191d" 
                          BorderBrush="#25292e"
                          CornerRadius="6"
                          Padding="10,8"
@@ -55,7 +56,6 @@
                 <TextBlock Text="Подтвердите пароль" Foreground="#9ba1a6" FontSize="13"/>
                 <TextBox PasswordChar="*" 
                          Watermark="Повторите пароль"
-                         Background="#16191d" 
                          BorderBrush="#25292e"
                          CornerRadius="6" 
                          Padding="10,8"
