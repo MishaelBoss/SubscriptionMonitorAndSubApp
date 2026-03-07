@@ -11,7 +11,7 @@
         <StyleInclude Source="/Styles/SubscriptionsStyles.axaml"/>
     </UserControl.Styles>
     
-    <ScrollViewer Padding="15">
+    <Border Padding="15">
         <Grid RowDefinitions="Auto,*">
             <Grid Grid.Row="0">
                 <ComboBox HorizontalAlignment="Stretch" 
@@ -22,7 +22,10 @@
             </Grid>
 
             <Grid Grid.Row="1">
+                <ScrollViewer>
+                    
+                </ScrollViewer>
             </Grid>
         </Grid>
-    </ScrollViewer>
+    </Border>
 </UserControl>
