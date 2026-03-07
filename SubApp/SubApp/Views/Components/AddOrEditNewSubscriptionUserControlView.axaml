@@ -1,55 +1,154 @@
 <UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:vm="using:SubApp.ViewModels.Components"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:AddOrEditNewSubscriptionUserControlViewModel"
+             Background="#0a0c0f"
              x:Class="SubApp.Views.Components.AddOrEditNewSubscriptionUserControlView">
 
-    <ScrollViewer Background="#1E2228">
-        <StackPanel Spacing="15">
-        
-            <Border Background="#2575FC" CornerRadius="12" Padding="15,10">
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                    <PathIcon Data="{StaticResource MailIconData}" Foreground="White"/>
-                    <TextBlock Text="Подключить почтовый ящик" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                </StackPanel>
-            </Border>
+    <UserControl.Styles>
+        <StyleInclude Source="/Styles/AddOrEditMailboxStyles.axaml"/>
+    </UserControl.Styles>
 
-            <StackPanel Spacing="5">
-                <TextBlock Text="Email адрес" Foreground="#8E9196" FontSize="12"/>
-                <TextBox Watermark="example@gmail.com" Classes="FormInput"/>
-            </StackPanel>
-
-            <Grid ColumnDefinitions="*, 120" RowDefinitions="Auto, Auto">
-                <StackPanel Grid.Column="0" Spacing="5" Margin="0,0,10,0">
-                    <TextBlock Text="Почтовый провайдер" Foreground="#8E9196" FontSize="12"/>
-                    <ComboBox HorizontalAlignment="Stretch" SelectedIndex="0" Classes="FormInput">
-                        <ComboBoxItem>Gmail</ComboBoxItem>
-                    </ComboBox>
-                </StackPanel>
-            
-                <StackPanel Grid.Column="1" Spacing="5">
-                    <TextBlock Text="IMAP порт" Foreground="#8E9196" FontSize="12"/>
-                    <TextBox Text="993" Classes="FormInput"/>
-                </StackPanel>
+    <ScrollViewer>
+        <Grid RowDefinitions="Auto,*">
+            <Grid Grid.Row="0">
+                <Button Background="Transparent" 
+                        BorderThickness="0" 
+                        Padding="5" 
+                        Margin="10,0,0,0"
+                        Command="{Binding CloseCommand}">
+                    <Image Source="/Assets/back-64.png" Width="32" Height="32"/>
+                </Button>
             </Grid>
 
-            <StackPanel Spacing="5">
-                <TextBlock Text="IMAP сервер" Foreground="#8E9196" FontSize="12"/>
-                <TextBox Text="imap.gmail.com" Classes="FormInput"/>
-            </StackPanel>
+            <Grid Grid.Row="1">
+                <StackPanel Margin="16" Spacing="20">
+                    <Border Background="#1C1C1E" CornerRadius="12" Padding="16">
+                        <StackPanel Spacing="15">
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="СЕРВИС" FontSize="11" FontWeight="Bold" Foreground="#8E8E93" />
+                                <ComboBox HorizontalAlignment="Stretch" 
+                                          Classes="ModernCombo"
+                                          ItemsSource="{Binding Service}"
+                                          SelectedItem="{Binding SelectedService}">
+                                </ComboBox>
+                            </StackPanel>
 
-            <StackPanel Spacing="5">
-                <TextBlock Text="Пароль от почты" Foreground="#8E9196" FontSize="12"/>
-                <TextBox PasswordChar="*" Classes="FormInput"/>
-            </StackPanel>
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="НАЗВАНИЕ ПОДПИСКИ" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
+                                <TextBox Text="{Binding SubscriptionName}" Classes="ModernInput"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
 
-            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,10,0,0">
-                <Button Content="Сохранить" Classes="PrimaryBtn"/>
-                <Button Content="Отмена" Classes="SecondaryBtn" />
-            </StackPanel>
+                    <Border Background="#1C1C1E" CornerRadius="12" Padding="16">
+                        <StackPanel Spacing="15">
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="ПЕРИОД ОПЛАТЫ" FontSize="11" FontWeight="Bold" Foreground="#8E8E93" />
+                                <ComboBox HorizontalAlignment="Stretch" 
+                                          Classes="ModernCombo"
+                                          ItemsSource="{Binding PaymentPeriod}"
+                                          SelectedItem="{Binding SelectedPaymentPeriod}">
+                                </ComboBox>
+                            </StackPanel>
 
-        </StackPanel>
+                            <Grid ColumnDefinitions="*, 100" ColumnSpacing="12">
+                                <StackPanel Spacing="5">
+                                    <TextBlock Text="СУММА" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
+                                    <NumericUpDown Value="{Binding Sum}"
+                                                   Minimum="1" 
+                                                   Maximum="65535" 
+                                                   Increment="1"
+                                                   FormatString="0"
+                                                   ShowButtonSpinner="False"
+                                                   Classes="ModernNumeric"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="5">
+                                    <TextBlock Text="ВАЛЮТА" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
+                                    <ComboBox HorizontalAlignment="Stretch" 
+                                              Classes="ModernCombo"
+                                              ItemsSource="{Binding Currency}"
+                                              SelectedItem="{Binding SelectedCurrency}">
+                                </ComboBox>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                    <Border Background="#1C1C1E" CornerRadius="12" Padding="16">
+                        <StackPanel Spacing="15">
+                            <Grid ColumnDefinitions="*, 100" ColumnSpacing="12">
+                                <StackPanel Spacing="5">
+                                    <TextBlock Text="ДАТА НАЧАЛА" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
+                                    <NumericUpDown Value="{Binding Sum}"
+                                                   Minimum="1" 
+                                                   Maximum="65535" 
+                                                   Increment="1"
+                                                   FormatString="0"
+                                                   ShowButtonSpinner="False"
+                                                   Classes="ModernNumeric"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="5">
+                                    <TextBlock Text="ДАТА СЛЕДУЮЩЕГО ПЛАТЕЖА" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
+                                    <ComboBox HorizontalAlignment="Stretch" 
+                                              Classes="ModernCombo"
+                                              ItemsSource="{Binding Currency}"
+                                              SelectedItem="{Binding SelectedCurrency}">
+                                </ComboBox>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                    <Border Background="#1C1C1E" CornerRadius="12" Padding="16">
+                        <StackPanel Spacing="15">
+                            <Grid ColumnDefinitions="*, 100" ColumnSpacing="12">
+                                <StackPanel Spacing="5">
+                                    <TextBlock Text="СТАТУС" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
+                                    <ComboBox HorizontalAlignment="Stretch" 
+                                              Classes="ModernCombo"
+                                              ItemsSource="{Binding Status}"
+                                              SelectedItem="{Binding SelectedStatus}">
+                                    </ComboBox>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="5">
+                                    <TextBlock Text="ДАТА СЛЕДУЮЩЕГО ПЛАТЕЖА" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
+                                    <ComboBox HorizontalAlignment="Stretch" 
+                                              Classes="ModernCombo"
+                                              ItemsSource="{Binding Currency}"
+                                              SelectedItem="{Binding SelectedCurrency}">
+                                </ComboBox>
+                                </StackPanel>
+                            </Grid>
+
+                            <CheckBox IsChecked="{Binding AutomaticRenewal}" Margin="0,5">
+                                <TextBlock Text="Автоматическое продление" Foreground="#8E8E93" FontSize="13"/>
+                            </CheckBox>
+                        </StackPanel>
+                    </Border>
+                    <Border Background="#1C1C1E" CornerRadius="12" Padding="16">
+                        <StackPanel Spacing="15">
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="ЗАМЕТКИ" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
+                                <TextBox Text="{Binding Notes}" Classes="ModernInput"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                    <TextBlock Text="{Binding ErroredSubscription}" 
+                               Foreground="#FF5252" 
+                               FontSize="12" 
+                               HorizontalAlignment="Center"
+                               IsVisible="{Binding ErroredSubscription, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"/>
+
+                    <Button Classes="PrimaryButton" 
+                            Content="Сохранить изменения" 
+                            HorizontalAlignment="Stretch" 
+                            IsEnabled="{Binding IsActiveConfirmButton}"/>
+                </StackPanel>
+            </Grid>
+        </Grid>
     </ScrollViewer>
-
 </UserControl>

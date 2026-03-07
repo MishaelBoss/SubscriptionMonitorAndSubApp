@@ -13,11 +13,8 @@ namespace SubApp.ViewModels.Components;
 
 public partial class AddOrEditMailboxUserControlViewModel : ViewModelBase
 {
-    public List<string> MailProviders { get; } = new()
-    { 
-        "Gmail", "Yandex", "Mail.ru", "Outlook", "Другой (IMAP)" 
-    };
-    
+    public List<string> MailProviders { get; } = [ "Gmail", "Yandex", "Mail.ru", "Outlook", "Другой (IMAP)" ];
+
     [ObservableProperty] private string _errorEmail = string.Empty;
     [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private string _email = string.Empty;
     [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private string _password = string.Empty;

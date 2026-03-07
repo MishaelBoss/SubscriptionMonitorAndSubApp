@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using SubApp.Scripts;
 using SubApp.ViewModels.Components;
 using SubApp.ViewModels.Pages;
-
 namespace SubApp.ViewModels;
 
 public partial class MainViewModel : ViewModelBase, 
@@ -14,7 +13,8 @@ public partial class MainViewModel : ViewModelBase,
     IRecipient<OpenOrCloseProfileMessage>,
     IRecipient<OpenOrCloseLoginMessage>,
     IRecipient<OpenOrCloseRegistrationMessage>,
-    IRecipient<OpenOrCloseAddOrEditEmailMessage>
+    IRecipient<OpenOrCloseAddOrEditEmailMessage>,
+    IRecipient<OpenOrCloseAddOrEditNewSubscriptionMessage>
 {
     [ObservableProperty] private ViewModelBase? _currentPage;
     [ObservableProperty] private ViewModelBase? _overlayContent;
@@ -28,6 +28,7 @@ public partial class MainViewModel : ViewModelBase,
     private readonly LoginUserControlViewModel _loginUserControlViewModel = new();
     private readonly RegistrationUserControlViewModel _registrationUserControlViewModel = new();
     private readonly AddOrEditMailboxUserControlViewModel _addOrEditMailboxUserControlViewModel = new();
+    private readonly AddOrEditNewSubscriptionUserControlViewModel _addOrEditNewSubscriptionUserControlView = new();
 
     public MainViewModel() 
     {
@@ -74,6 +75,11 @@ public partial class MainViewModel : ViewModelBase,
     public void Receive(OpenOrCloseAddOrEditEmailMessage message)
     {
         OverlayContent = OverlayContent is AddOrEditMailboxUserControlViewModel ? null : _addOrEditMailboxUserControlViewModel;
+    }
+
+    public void Receive(OpenOrCloseAddOrEditNewSubscriptionMessage message)
+    {
+        OverlayContent = OverlayContent is AddOrEditNewSubscriptionUserControlViewModel ? null : _addOrEditNewSubscriptionUserControlView;
     }
 
     ~MainViewModel() 

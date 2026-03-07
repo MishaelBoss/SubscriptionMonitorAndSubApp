@@ -76,7 +76,7 @@
                         </Grid>
                     </Border>
 
-                    <Button HorizontalAlignment="Center" Margin="0,5" Classes="AddButton">
+                    <Button HorizontalAlignment="Center" Margin="0,5" Classes="AddButton" Command="{Binding OpenAddSubscription}">
                         <StackPanel Orientation="Horizontal" Spacing="5">
                             <Image Source="/Assets/add-white-64.png" Width="20"/>
                             <TextBlock Text="Добавить подписку"/>
