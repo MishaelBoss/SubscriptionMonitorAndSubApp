@@ -14,6 +14,8 @@ public class AppDbContext : DbContext
     public DbSet<Mailbox> Mailboxes { get; set; }
     public DbSet<ParsedEmail> ParsedEmails { get; set; }
     public DbSet<Subscription> Subscriptions { get; set; }
+    public DbSet<Category> Categories { get; set; }
+    public DbSet<Service> Services { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
@@ -58,5 +60,12 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Mailbox>().ToTable("mail_parser_mailbox");
         modelBuilder.Entity<ParsedEmail>().ToTable("mail_parser_parsedemail");
         modelBuilder.Entity<Subscription>().ToTable("subscriptions_subscription");
+        modelBuilder.Entity<Category>().ToTable("subscriptions_category");
+        modelBuilder.Entity<Service>().ToTable("subscriptions_service");
+        modelBuilder.Entity<Subscription>().ToTable("subscriptions_subscription");
+        
+        modelBuilder.Entity<Subscription>()
+            .Property(s => s.Amount)
+            .HasConversion<double>(); 
     }
 }

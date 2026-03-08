@@ -57,24 +57,30 @@
                 <StackPanel Spacing="10">
                     <TextBlock Text="Активные подписки" Classes="SectionHeader"/>
                     <Separator Background="#2C2C2E" Height="1"/>
-
-                    <Border Background="#F2F2F7" CornerRadius="10" Padding="12,8">
-                        <Grid ColumnDefinitions="Auto, *, Auto, Auto">
-                            <Border Grid.Column="0" Background="#4A90E2" CornerRadius="15" Padding="8,4">
-                                <TextBlock Text="Zero+" Foreground="White" FontSize="12" FontWeight="Bold"/>
-                            </Border>
+                    
+                    <ItemsControl>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#F2F2F7" CornerRadius="10" Padding="12,8">
+                                    <Grid ColumnDefinitions="Auto, *, Auto, Auto">
+                                        <Border Grid.Column="0" Background="#4A90E2" CornerRadius="15" Padding="8,4">
+                                            <TextBlock Text="Zero+" Foreground="White" FontSize="12" FontWeight="Bold"/>
+                                        </Border>
                             
-                            <TextBlock Grid.Column="1" Text="1500,00 RUB" FontWeight="Bold" 
-                                       VerticalAlignment="Center" Margin="15,0,0,0"/>
+                                        <TextBlock Grid.Column="1" Text="1500,00 RUB" FontWeight="Bold" 
+                                                   VerticalAlignment="Center" Margin="15,0,0,0"/>
                             
-                            <TextBlock Grid.Column="2" Text="08.03.2026" Foreground="#8E8E93" 
-                                       VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                        <TextBlock Grid.Column="2" Text="08.03.2026" Foreground="#8E8E93" 
+                                                   VerticalAlignment="Center" Margin="0,0,10,0"/>
                             
-                            <Border Grid.Column="3" Background="#FFD60A" CornerRadius="10" Padding="6,2" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                <TextBlock Text="1 дн." Foreground="Black" FontSize="11"/>
-                            </Border>
-                        </Grid>
-                    </Border>
+                                        <Border Grid.Column="3" Background="#FFD60A" CornerRadius="10" Padding="6,2" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            <TextBlock Text="1 дн." Foreground="Black" FontSize="11"/>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
 
                     <Button HorizontalAlignment="Center" Margin="0,5" Classes="AddButton" Command="{Binding OpenAddSubscription}">
                         <StackPanel Orientation="Horizontal" Spacing="5">

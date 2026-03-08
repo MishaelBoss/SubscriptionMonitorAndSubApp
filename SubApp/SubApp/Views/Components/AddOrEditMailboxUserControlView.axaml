@@ -9,7 +9,7 @@
              x:Class="SubApp.Views.Components.AddOrEditMailboxUserControlView">
     
     <UserControl.Styles>
-        <StyleInclude Source="/Styles/AddOrEditMailboxStyles.axaml"/>
+        <StyleInclude Source="/Styles/ModernStyles.axaml"/>
     </UserControl.Styles>
     
     <ScrollViewer>
@@ -30,12 +30,15 @@
                         <StackPanel Spacing="15">
                             <StackPanel Spacing="5">
                                 <TextBlock Text="EMAIL АДРЕС" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
-                                <TextBox Text="{Binding Email}" Classes="ModernInput"/>
+                                <TextBox Text="{Binding Email}" 
+                                         Classes="ModernInput"
+                                         InputMethod.IsInputMethodEnabled="True"/>
                             </StackPanel>
 
                             <StackPanel Spacing="5">
                                 <TextBlock Text="ПАРОЛЬ ОТ ПОЧТЫ" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
-                                <TextBox PasswordChar="●" Text="{Binding Password}" Classes="ModernInput"/>
+                                <TextBox PasswordChar="●" Text="{Binding Password}" 
+                                         Classes="ModernInput"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -47,38 +50,43 @@
                                 <ComboBox HorizontalAlignment="Stretch" 
                                           Classes="ModernCombo"
                                           ItemsSource="{Binding MailProviders}"
-                                          SelectedItem="{Binding SelectedProvider}">
-                                </ComboBox>
+                                          SelectedItem="{Binding SelectedProvider}"/>
                             </StackPanel>
 
                             <Grid ColumnDefinitions="*, 100" ColumnSpacing="12">
                                 <StackPanel Spacing="5">
                                     <TextBlock Text="IMAP СЕРВЕР" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
-                                    <TextBox Text="{Binding ImapServer}" Classes="ModernInput"/>
+                                    <TextBox Text="{Binding ImapServer}" 
+                                             Classes="ModernInput"
+                                             InputMethod.IsInputMethodEnabled="True"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Spacing="5">
                                     <TextBlock Text="ПОРТ" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
-                                    <NumericUpDown Value="{Binding ImapPort}" 
+                                    <NumericUpDown Value="{Binding ImapPort, TargetNullValue=0}" 
                                                    Minimum="1" 
                                                    Maximum="65535" 
                                                    Increment="1"
                                                    FormatString="0"
                                                    ShowButtonSpinner="False"
-                                                   Classes="ModernNumeric"/>
+                                                   Classes="ModernNumeric"
+                                                   InputMethod.IsInputMethodEnabled="True"/>
                                 </StackPanel>
                             </Grid>
 
                             <StackPanel Spacing="5">
                                 <TextBlock Text="ЧАСТОТА ПРОВЕРКИ (МИН)" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
-                                <NumericUpDown Value="{Binding FrequencyCheck}" 
+                                <NumericUpDown Value="{Binding FrequencyCheck, TargetNullValue=0}" 
                                                Minimum="1" 
                                                Maximum="1440" 
                                                ShowButtonSpinner="False"
-                                               Classes="ModernNumeric"/>
+                                               Classes="ModernNumeric"
+                                               InputMethod.IsInputMethodEnabled="True"/>
                             </StackPanel>
 
                             <CheckBox IsChecked="{Binding AutoCheck}" Margin="0,5">
-                                <TextBlock Text="Автоматическая проверка" Foreground="#8E8E93" FontSize="13"/>
+                                <TextBlock Text="Автоматическая проверка" 
+                                           Foreground="#8E8E93" 
+                                           FontSize="13"/>
                             </CheckBox>
                         </StackPanel>
                     </Border>

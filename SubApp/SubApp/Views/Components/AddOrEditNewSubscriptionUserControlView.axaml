@@ -3,14 +3,19 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="clr-namespace:SubApp.Converters"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="vm:AddOrEditNewSubscriptionUserControlViewModel"
              Background="#0a0c0f"
              x:Class="SubApp.Views.Components.AddOrEditNewSubscriptionUserControlView">
 
     <UserControl.Styles>
-        <StyleInclude Source="/Styles/AddOrEditMailboxStyles.axaml"/>
+        <StyleInclude Source="/Styles/ModernStyles.axaml"/>
     </UserControl.Styles>
+    
+    <UserControl.Resources>
+        <converters:EnumToRussianConverter x:Key="RussianEnumConv"/>
+    </UserControl.Resources>
 
     <ScrollViewer>
         <Grid RowDefinitions="Auto,*">
@@ -32,14 +37,16 @@
                                 <TextBlock Text="СЕРВИС" FontSize="11" FontWeight="Bold" Foreground="#8E8E93" />
                                 <ComboBox HorizontalAlignment="Stretch" 
                                           Classes="ModernCombo"
-                                          ItemsSource="{Binding Service}"
-                                          SelectedItem="{Binding SelectedService}">
-                                </ComboBox>
+                                          DisplayMemberBinding="{Binding Name}" 
+                                          ItemsSource="{Binding Services}"
+                                          SelectedItem="{Binding SelectedService}"/>
                             </StackPanel>
 
                             <StackPanel Spacing="5">
                                 <TextBlock Text="НАЗВАНИЕ ПОДПИСКИ" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
-                                <TextBox Text="{Binding SubscriptionName}" Classes="ModernInput"/>
+                                <TextBox Text="{Binding SubscriptionName}" 
+                                         Classes="ModernInput"
+                                         InputMethod.IsInputMethodEnabled="True"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -50,75 +57,88 @@
                                 <TextBlock Text="ПЕРИОД ОПЛАТЫ" FontSize="11" FontWeight="Bold" Foreground="#8E8E93" />
                                 <ComboBox HorizontalAlignment="Stretch" 
                                           Classes="ModernCombo"
-                                          ItemsSource="{Binding PaymentPeriod}"
+                                          ItemsSource="{Binding PaymentPeriods}"
                                           SelectedItem="{Binding SelectedPaymentPeriod}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Converter={StaticResource RussianEnumConv}}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
                                 </ComboBox>
                             </StackPanel>
-
+                            
                             <Grid ColumnDefinitions="*, 100" ColumnSpacing="12">
                                 <StackPanel Spacing="5">
                                     <TextBlock Text="СУММА" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
-                                    <NumericUpDown Value="{Binding Sum}"
+                                    <NumericUpDown Value="{Binding Sum, TargetNullValue=0}"
                                                    Minimum="1" 
                                                    Maximum="65535" 
                                                    Increment="1"
                                                    FormatString="0"
                                                    ShowButtonSpinner="False"
-                                                   Classes="ModernNumeric"/>
+                                                   Classes="ModernNumeric"
+                                                   InputMethod.IsInputMethodEnabled="True"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Spacing="5">
                                     <TextBlock Text="ВАЛЮТА" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
                                     <ComboBox HorizontalAlignment="Stretch" 
                                               Classes="ModernCombo"
-                                              ItemsSource="{Binding Currency}"
+                                              ItemsSource="{Binding Currencies}"
                                               SelectedItem="{Binding SelectedCurrency}">
-                                </ComboBox>
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Converter={StaticResource RussianEnumConv}}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
                                 </StackPanel>
                             </Grid>
                         </StackPanel>
                     </Border>
                     <Border Background="#1C1C1E" CornerRadius="12" Padding="16">
                         <StackPanel Spacing="15">
-                            <Grid ColumnDefinitions="*, 100" ColumnSpacing="12">
+                            <Grid ColumnDefinitions="*, *" ColumnSpacing="12">
                                 <StackPanel Spacing="5">
                                     <TextBlock Text="ДАТА НАЧАЛА" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
-                                    <NumericUpDown Value="{Binding Sum}"
-                                                   Minimum="1" 
-                                                   Maximum="65535" 
-                                                   Increment="1"
-                                                   FormatString="0"
-                                                   ShowButtonSpinner="False"
-                                                   Classes="ModernNumeric"/>
+                                    <CalendarDatePicker SelectedDate="{Binding StartDate, Mode=TwoWay}"
+                                                        Watermark="Выбрать"
+                                                        Classes="ModernDate"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Spacing="5">
                                     <TextBlock Text="ДАТА СЛЕДУЮЩЕГО ПЛАТЕЖА" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
-                                    <ComboBox HorizontalAlignment="Stretch" 
-                                              Classes="ModernCombo"
-                                              ItemsSource="{Binding Currency}"
-                                              SelectedItem="{Binding SelectedCurrency}">
-                                </ComboBox>
+                                    <CalendarDatePicker SelectedDate="{Binding NextPaymentDate, Mode=TwoWay}"
+                                                        Watermark="Выбрать"
+                                                        Classes="ModernDate"/>
                                 </StackPanel>
                             </Grid>
                         </StackPanel>
                     </Border>
                     <Border Background="#1C1C1E" CornerRadius="12" Padding="16">
                         <StackPanel Spacing="15">
-                            <Grid ColumnDefinitions="*, 100" ColumnSpacing="12">
+                            <Grid ColumnDefinitions="*, 120" ColumnSpacing="12">
                                 <StackPanel Spacing="5">
                                     <TextBlock Text="СТАТУС" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
                                     <ComboBox HorizontalAlignment="Stretch" 
                                               Classes="ModernCombo"
                                               ItemsSource="{Binding Status}"
                                               SelectedItem="{Binding SelectedStatus}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Converter={StaticResource RussianEnumConv}}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
                                     </ComboBox>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Spacing="5">
-                                    <TextBlock Text="ДАТА СЛЕДУЮЩЕГО ПЛАТЕЖА" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
-                                    <ComboBox HorizontalAlignment="Stretch" 
-                                              Classes="ModernCombo"
-                                              ItemsSource="{Binding Currency}"
-                                              SelectedItem="{Binding SelectedCurrency}">
-                                </ComboBox>
+                                    <TextBlock Text="ДНЕЙ В ПЕРИОДЕ (для своего периода)" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
+                                    <NumericUpDown Value="{Binding DaysPeriod, TargetNullValue=0}"
+                                                   Minimum="1" 
+                                                   Maximum="65535" 
+                                                   Increment="1"
+                                                   FormatString="0"
+                                                   ShowButtonSpinner="False"
+                                                   Classes="ModernNumeric"
+                                                   InputMethod.IsInputMethodEnabled="True"/>
                                 </StackPanel>
                             </Grid>
 
@@ -131,7 +151,13 @@
                         <StackPanel Spacing="15">
                             <StackPanel Spacing="5">
                                 <TextBlock Text="ЗАМЕТКИ" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
-                                <TextBox Text="{Binding Notes}" Classes="ModernInput"/>
+                                <TextBox Text="{Binding Notes}" 
+                                         Classes="ModernInput"
+                                         TextWrapping="Wrap"
+                                         AcceptsReturn="True"
+                                         MaxHeight="200"
+                                         MinHeight="80"
+                                         InputMethod.IsInputMethodEnabled="True"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -146,6 +172,7 @@
                     <Button Classes="PrimaryButton" 
                             Content="Сохранить изменения" 
                             HorizontalAlignment="Stretch" 
+                            Command="{Binding SaveCommand}"
                             IsEnabled="{Binding IsActiveConfirmButton}"/>
                 </StackPanel>
             </Grid>

@@ -42,12 +42,18 @@ public partial class App : Application
                 DataContext = new MainViewModel()
             };
         }
-
-
+        
         if (!await AuthService.TryAutoLoginAsync())
         {
             WeakReferenceMessenger.Default.Send(new OpenOrCloseLoginMessage());
         }
+        
+        var culture = new System.Globalization.CultureInfo("ru-RU");
+        culture.DateTimeFormat.ShortDatePattern = "dd.MM.yyyy"; 
+        culture.NumberFormat.NumberDecimalSeparator = ".";
+
+        System.Threading.Thread.CurrentThread.CurrentCulture = culture;
+        System.Threading.Thread.CurrentThread.CurrentUICulture = culture;
 
         base.OnFrameworkInitializationCompleted();
     }

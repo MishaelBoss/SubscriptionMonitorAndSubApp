@@ -112,4 +112,49 @@
     <Style Selector="NumericUpDown.ModernNumeric /template/ TextBox#PART_TextBox:focus">
         <Setter Property="Foreground" Value="White" />
     </Style>
+    
+    <Style Selector="CalendarDatePicker.ModernDate">
+        <Setter Property="Background" Value="#2C2C2E" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="MinHeight" Value="45" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Padding" Value="12,0" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <DataValidationErrors>
+                    <Panel>
+                        <Border Name="Background"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                MinHeight="{TemplateBinding MinHeight}">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBox Name="PART_TextBox"
+                                         Grid.Column="0"
+                                         Foreground="{TemplateBinding Foreground}"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         Padding="{TemplateBinding Padding}"
+                                         VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                         IsReadOnly="True"
+                                         Watermark="{TemplateBinding Watermark}" />
+                                <PathIcon Data="M7 11h2v2H7v-2zm14-5v14c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2h1V2h2v2h8V2h2v2h1c1.1 0 2 .9 2 2zM5 8h14V6H5v2zm14 12V10H5v10h14z"
+                                          Grid.Column="1"
+                                          Margin="0,0,12,0"
+                                          Width="18"
+                                          Height="18"
+                                          Foreground="#8E8E93" />
+                            </Grid>
+                        </Border>
+                        <Popup Name="PART_Popup" PlacementTarget="{TemplateBinding Background}">
+                            <Calendar Name="PART_Calendar" 
+                                      SelectedDate="{TemplateBinding SelectedDate, Mode=TwoWay}" />
+                        </Popup>
+                    </Panel>
+                </DataValidationErrors>
+            </ControlTemplate>
+        </Setter>
+    </Style>
 </Styles>
