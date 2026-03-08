@@ -58,23 +58,25 @@
                     <TextBlock Text="Активные подписки" Classes="SectionHeader"/>
                     <Separator Background="#2C2C2E" Height="1"/>
                     
-                    <ItemsControl>
+                    <ItemsControl ItemsSource="{Binding Subscriptions}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Background="#F2F2F7" CornerRadius="10" Padding="12,8">
+                                <Border Background="#F2F2F7" CornerRadius="10" Padding="12,8" Margin="0, 5">
                                     <Grid ColumnDefinitions="Auto, *, Auto, Auto">
                                         <Border Grid.Column="0" Background="#4A90E2" CornerRadius="15" Padding="8,4">
-                                            <TextBlock Text="Zero+" Foreground="White" FontSize="12" FontWeight="Bold"/>
+                                            <TextBlock Text="{Binding Service.Name}" Foreground="White" FontSize="12" FontWeight="Bold"/>
                                         </Border>
-                            
-                                        <TextBlock Grid.Column="1" Text="1500,00 RUB" FontWeight="Bold" 
-                                                   VerticalAlignment="Center" Margin="15,0,0,0"/>
-                            
-                                        <TextBlock Grid.Column="2" Text="08.03.2026" Foreground="#8E8E93" 
+                                        
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="20,0">
+                                            <TextBlock Text="{Binding Amount, StringFormat='{}{0:N2}'}" FontWeight="Bold"/>
+                                            <TextBlock Text="{Binding Currency}" Margin="5,0,0,0"/>
+                                        </StackPanel>
+                                        
+                                        <TextBlock Grid.Column="2" Text="{Binding NextPaymentDate, StringFormat='dd.MM.yyyy'}" Foreground="#8E8E93" 
                                                    VerticalAlignment="Center" Margin="0,0,10,0"/>
                             
-                                        <Border Grid.Column="3" Background="#FFD60A" CornerRadius="10" Padding="6,2" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                            <TextBlock Text="1 дн." Foreground="Black" FontSize="11"/>
+                                        <Border Grid.Column="3" Background="{Binding StatusColor}" CornerRadius="10" Padding="6,2" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            <TextBlock Text="{Binding StatusDisplay}" Foreground="Black" FontSize="11"/>
                                         </Border>
                                     </Grid>
                                 </Border>
