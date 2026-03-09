@@ -16,7 +16,7 @@
     <Grid>
         <ContentControl Content="{Binding OverlayContent}" ZIndex="2"/>
 
-        <Grid Grid.RowDefinitions="Auto,*">
+        <Grid RowDefinitions="Auto,*">
             <Grid Grid.Row="0">
                 <components:DashboardUserControl/>
             </Grid>

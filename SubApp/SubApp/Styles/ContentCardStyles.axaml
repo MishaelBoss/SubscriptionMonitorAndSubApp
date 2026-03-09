@@ -1,0 +1,35 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        
+        <Style Selector="Border.StatCard">
+                <Setter Property="Background" Value="#1E1E22"/>
+                <Setter Property="CornerRadius" Value="10"/>
+                <Setter Property="Padding" Value="16, 12"/>
+                <Setter Property="MinHeight" Value="60"/>
+        </Style>
+
+        <Style Selector="TextBlock.CardHeader">
+                <Setter Property="FontSize" Value="9"/>
+                <Setter Property="Foreground" Value="#7A7A7E"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style Selector="TextBlock.CardValue">
+                <Setter Property="FontSize" Value="18"/>
+                <Setter Property="Foreground" Value="#C2C2FA"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="Margin" Value="0,2,0,0"/>
+        </Style>
+    
+        <Style Selector="Border.ContentCard">
+                <Setter Property="Background" Value="#1C1C1E"/>
+                <Setter Property="CornerRadius" Value="12"/>
+                <Setter Property="Padding" Value="15"/>
+        </Style>
+        
+        <Style Selector="TextBlock.SectionHeader">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Foreground" Value="#8E8E93"/>
+        </Style>
+</Styles>

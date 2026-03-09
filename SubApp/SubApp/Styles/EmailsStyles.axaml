@@ -1,17 +1,5 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    
-        <Style Selector="Border.ContentCard">
-                <Setter Property="Background" Value="#1C1C1E"/>
-                <Setter Property="CornerRadius" Value="12"/>
-                <Setter Property="Padding" Value="15"/>
-        </Style>
-
-        <Style Selector="TextBlock.SectionHeader">
-                <Setter Property="FontSize" Value="14"/>
-                <Setter Property="FontWeight" Value="SemiBold"/>
-                <Setter Property="Foreground" Value="#8E8E93"/>
-        </Style>
 
         <Style Selector="Button.AddButton">
                 <Setter Property="Background" Value="#5856D6"/>

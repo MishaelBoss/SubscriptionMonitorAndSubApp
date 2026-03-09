@@ -14,7 +14,7 @@
     </UserControl.Styles>
     
     <UserControl.Resources>
-        <converters:EnumToRussianConverter x:Key="RussianEnumConv"/>
+        <converters:EnumToRussianConverter x:Key="EnumToRussianConverter"/>
     </UserControl.Resources>
 
     <ScrollViewer>
@@ -61,7 +61,7 @@
                                           SelectedItem="{Binding SelectedPaymentPeriod}">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding Converter={StaticResource RussianEnumConv}}"/>
+                                            <TextBlock Text="{Binding Converter={StaticResource EnumToRussianConverter}}"/>
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
@@ -87,7 +87,7 @@
                                               SelectedItem="{Binding SelectedCurrency}">
                                         <ComboBox.ItemTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding Converter={StaticResource RussianEnumConv}}"/>
+                                                <TextBlock Text="{Binding Converter={StaticResource EnumToRussianConverter}}"/>
                                             </DataTemplate>
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
@@ -124,7 +124,7 @@
                                               SelectedItem="{Binding SelectedStatus}">
                                         <ComboBox.ItemTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding Converter={StaticResource RussianEnumConv}}"/>
+                                                <TextBlock Text="{Binding Converter={StaticResource EnumToRussianConverter}}"/>
                                             </DataTemplate>
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>

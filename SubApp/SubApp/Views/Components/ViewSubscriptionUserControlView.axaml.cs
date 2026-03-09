@@ -1,13 +1,11 @@
 using Avalonia.Controls;
-using SubApp.ViewModels.Components;
 
-namespace SubApp;
+namespace SubApp.Views.Components;
 
 public partial class ViewSubscriptionUserControlView : UserControl
 {
     public ViewSubscriptionUserControlView()
     {
         InitializeComponent();
-        DataContext = new ViewSubscriptionUserControlViewModel();
     }
 }

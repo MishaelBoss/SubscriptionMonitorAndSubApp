@@ -15,7 +15,8 @@ public partial class MainViewModel : ViewModelBase,
     IRecipient<OpenOrCloseLoginMessage>,
     IRecipient<OpenOrCloseRegistrationMessage>,
     IRecipient<OpenOrCloseAddOrEditEmailMessage>,
-    IRecipient<OpenOrCloseAddOrEditNewSubscriptionMessage>
+    IRecipient<OpenOrCloseAddOrEditNewSubscriptionMessage>,
+    IRecipient<OpenOrCloseSubscriptionDetailsMessage>
 {
     [ObservableProperty] private ViewModelBase? _currentPage;
     [ObservableProperty] private ViewModelBase? _overlayContent;
@@ -81,6 +82,14 @@ public partial class MainViewModel : ViewModelBase,
     public void Receive(OpenOrCloseAddOrEditNewSubscriptionMessage message)
     {
         OverlayContent = OverlayContent is AddOrEditNewSubscriptionUserControlViewModel ? null : _addOrEditNewSubscriptionUserControlView;
+    }
+    
+    public void Receive(OpenOrCloseSubscriptionDetailsMessage message)
+    {
+        // OverlayContent = OverlayContent == null ? new ViewSubscriptionUserControlViewModel(message.Sub) : null;
+        OverlayContent = message.Sub != null 
+            ? new ViewSubscriptionUserControlViewModel(message.Sub) 
+            : null;
     }
 
     ~MainViewModel() 

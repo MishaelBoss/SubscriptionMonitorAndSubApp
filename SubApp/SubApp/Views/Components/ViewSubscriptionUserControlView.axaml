@@ -5,5 +5,39 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="vm:ViewSubscriptionUserControlViewModel"
-             x:Class="SubApp.ViewSubscriptionUserControlView">
+             x:Class="SubApp.Views.Components.ViewSubscriptionUserControlView">
+    
+    <UserControl.Styles>
+        <StyleInclude Source="/Styles/ContentCardStyles.axaml"/>
+    </UserControl.Styles>
+    
+    <Border Padding="15" Background="#0a0c0f">
+        <Grid RowDefinitions="Auto,*">
+            <Grid Grid.Row="0">
+                <Button Background="Transparent" 
+                        BorderThickness="0" 
+                        Padding="5" 
+                        Command="{Binding CloseCommand}">
+                    <Image Source="/Assets/back-64.png" 
+                           Width="32" 
+                           Height="32"/>
+                </Button>
+            </Grid>
+
+            <Grid Grid.Row="1">
+                <ScrollViewer>
+                    <Border Classes="ContentCard">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="История платежей" Classes="SectionHeader"/>
+                            <Separator Background="#2C2C2E" Height="1"/>
+                    
+                            <StackPanel HorizontalAlignment="Center" Margin="0,20" Spacing="10">
+                                <TextBlock Text="Пока нет" Foreground="#8E8E93" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+    </Border>
 </UserControl>

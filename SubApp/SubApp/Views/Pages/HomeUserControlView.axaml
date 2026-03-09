@@ -8,7 +8,8 @@
              x:Class="SubApp.Views.Pages.HomeUserControlView">
 
     <UserControl.Styles>
-		<StyleInclude Source="/Styles/HomePageStyles.axaml"/>
+        <StyleInclude Source="/Styles/ContentCardStyles.axaml"/>
+        <StyleInclude Source="/Styles/HomePageStyles.axaml"/>
 	</UserControl.Styles>
 
     <ScrollViewer>
@@ -95,15 +96,28 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <Button HorizontalAlignment="Center" Margin="0,5" Classes="AddButton" Command="{Binding OpenAddSubscription}">
+                    <Button HorizontalAlignment="Center" 
+                            Margin="0,5" 
+                            Classes="AddButton" 
+                            Command="{Binding OpenAddSubscription}">
                         <StackPanel Orientation="Horizontal" Spacing="5">
                             <Image Source="/Assets/add-white-64.png" Width="20"/>
                             <TextBlock Text="Добавить подписку"/>
                         </StackPanel>
                     </Button>
+                    
+                    <Button HorizontalAlignment="Center" 
+                            Margin="0,5" 
+                            Classes="TransparentButton" 
+                            Command="{Binding LoadMoreCommand}"
+                            IsVisible="{Binding HasMoreData}">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <TextBlock Text="Загрузаить еще"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </Border>
-
+            <Grid Height="80"/>
         </StackPanel>
     </ScrollViewer>
 </UserControl>
