@@ -1,14 +1,13 @@
-﻿using System;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using SubApp.Data;
+using SubApp.Models;
 using SubApp.Scripts;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SubApp.Data;
-using SubApp.Models;
-using Xamarin.Essentials;
 
 namespace SubApp.ViewModels.Components;
 
@@ -16,8 +15,8 @@ public partial class AddOrEditNewSubscriptionUserControlViewModel : ViewModelBas
 {
     [ObservableProperty] private List<Service> _services = [];
     
-    public List<BillingCycle> PaymentPeriods { get; } = Enum.GetValues<BillingCycle>().ToList();
-    public List<Currency> Currencies { get; } = Enum.GetValues<Currency>().ToList();
+    public List<BillingCycle> PaymentPeriods { get; } = [.. Enum.GetValues<BillingCycle>()];
+    public List<Currency> Currencies { get; } = [.. Enum.GetValues<Currency>()];
     public List<SubscriptionStatus> Status { get; } = 
     [ 
         SubscriptionStatus.Active, 
@@ -32,30 +31,34 @@ public partial class AddOrEditNewSubscriptionUserControlViewModel : ViewModelBas
     // public List<string> Status { get; } = [ "Активна", "Приостановлена", "Пробный период" ];
 
     [ObservableProperty] private string _erroredSubscription = string.Empty;
-    [ObservableProperty] private Service? _selectedService;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private Service? _selectedService;
     [ObservableProperty] private string _subscriptionName = string.Empty;
     [ObservableProperty] private BillingCycle _selectedPaymentPeriod = BillingCycle.Monthly;
-    [ObservableProperty] private decimal? _sum;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private decimal? _sum;
     [ObservableProperty] private Currency _selectedCurrency = Currency.RUB;
     [ObservableProperty] private SubscriptionStatus _selectedStatus = SubscriptionStatus.Active;
-    [ObservableProperty] private DateTime? _startDate = DateTime.UtcNow;
-    [ObservableProperty] private DateTime? _nextPaymentDate;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private DateTime? _startDate = DateTime.UtcNow;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private DateTime? _nextPaymentDate;
     [ObservableProperty] private int? _daysPeriod = 30;
     [ObservableProperty] private bool _automaticRenewal = true;
     [ObservableProperty] private string _notes = string.Empty;
 
-    public bool IsActiveConfirmButton
-        => true;
+    public bool IsActiveConfirmButton =>
+        SelectedService != null &&
+        Sum > 0 &&
+        StartDate != null &&
+        NextPaymentDate != null;
 
     public AddOrEditNewSubscriptionUserControlViewModel()
     {
+        ClearForm();
         LoadData();
     }
     
     private void LoadData()
     {
         using var db = new AppDbContext();
-        Services = db.Services.Where(s => s.IsActive).ToList();
+        Services = [.. db.Services.Where(s => s.IsActive)];
     }
     
     [RelayCommand]
@@ -94,6 +97,7 @@ public partial class AddOrEditNewSubscriptionUserControlViewModel : ViewModelBas
             await db.SaveChangesAsync();
         
             Close();
+            ClearForm();
         }
         catch (Exception ex)
         {
@@ -105,5 +109,21 @@ public partial class AddOrEditNewSubscriptionUserControlViewModel : ViewModelBas
     public void Close() 
     {
         WeakReferenceMessenger.Default.Send(new OpenOrCloseAddOrEditNewSubscriptionMessage());
+    }
+
+    private void ClearForm() 
+    {
+        ErroredSubscription = string.Empty;
+        SelectedService = null;
+        SubscriptionName = string.Empty;
+        SelectedPaymentPeriod = BillingCycle.Monthly;
+        Sum = 0;
+        SelectedCurrency = Currency.RUB;
+        SelectedStatus = SubscriptionStatus.Active;
+        StartDate = DateTime.UtcNow;
+        NextPaymentDate = null;
+        DaysPeriod = 30;
+        AutomaticRenewal = true;
+        Notes = string.Empty;
     }
 }
