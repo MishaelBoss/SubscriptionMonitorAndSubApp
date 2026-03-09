@@ -62,21 +62,32 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Background="#F2F2F7" CornerRadius="10" Padding="12,8" Margin="0, 5">
-                                    <Grid ColumnDefinitions="Auto, *, Auto, Auto">
+                                    <Grid ColumnDefinitions="70, *, Auto, Auto">
                                         <Border Grid.Column="0" Background="#4A90E2" CornerRadius="15" Padding="8,4">
-                                            <TextBlock Text="{Binding Service.Name}" Foreground="White" FontSize="12" FontWeight="Bold"/>
+                                            <TextBlock Text="{Binding Service.Name}" 
+                                                       Foreground="White" 
+                                                       FontSize="12" 
+                                                       FontWeight="Bold"
+                                                       MaxWidth="50"
+                                                       TextTrimming="CharacterEllipsis"/>
                                         </Border>
                                         
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="20,0">
-                                            <TextBlock Text="{Binding Amount, StringFormat='{}{0:N2}'}" FontWeight="Bold"/>
-                                            <TextBlock Text="{Binding Currency}" Margin="5,0,0,0"/>
+                                            <TextBlock Text="{Binding Amount, StringFormat='{}{0:N2}'}" 
+                                                       FontWeight="Bold"/>
+                                            <TextBlock Text="{Binding Currency}" 
+                                                       Margin="5,0,0,0"/>
                                         </StackPanel>
                                         
                                         <TextBlock Grid.Column="2" Text="{Binding NextPaymentDate, StringFormat='dd.MM.yyyy'}" Foreground="#8E8E93" 
                                                    VerticalAlignment="Center" Margin="0,0,10,0"/>
                             
                                         <Border Grid.Column="3" Background="{Binding StatusColor}" CornerRadius="10" Padding="6,2" VerticalAlignment="Center" HorizontalAlignment="Center">
-                                            <TextBlock Text="{Binding StatusDisplay}" Foreground="Black" FontSize="11"/>
+                                            <TextBlock Text="{Binding StatusDisplay}"
+                                                       Foreground="Black" 
+                                                       FontSize="11"
+                                                       MaxWidth="50"
+                                                       TextTrimming="CharacterEllipsis"/>
                                         </Border>
                                     </Grid>
                                 </Border>
