@@ -17,6 +17,7 @@ public partial class HomeUserControlViewModel : ViewModelBase
     private const int PageSize = 5;
     [ObservableProperty] private bool _hasMoreData = true;
     private static List<Subscription>? _cache = [];
+    [ObservableProperty] private int _countSubscription;
 
     [RelayCommand]
     public void OpenAddSubscription() 
@@ -31,6 +32,10 @@ public partial class HomeUserControlViewModel : ViewModelBase
 
     private void LoadSubscriptions() 
     {
+        using var db = new AppDbContext();
+
+        CountSubscription = db.Subscriptions.Count(s => s.IsActive);
+
         if (_cache.Any())
         {
             Subscriptions = new ObservableCollection<Subscription>(_cache);
@@ -38,7 +43,6 @@ public partial class HomeUserControlViewModel : ViewModelBase
             return;
         }
         
-        using var db = new AppDbContext();
         var list = db.Subscriptions
             .Include(s => s.Service)
             .Where(s => s.IsActive)

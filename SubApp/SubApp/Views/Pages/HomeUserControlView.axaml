@@ -19,7 +19,7 @@
                 <Border Classes="StatCard">
                     <StackPanel>
                         <TextBlock Text="АКТИВНЫХ ПОДПИСОК" Classes="CardHeader"/>
-                        <TextBlock Text="2" Classes="CardValue"/>
+                        <TextBlock Text="{Binding CountSubscription}" Classes="CardValue"/>
                     </StackPanel>
                 </Border>
                 <Border Classes="StatCard">
