@@ -11,18 +11,18 @@ using SubApp.Scripts;
 
 namespace SubApp.ViewModels.Components;
 
-public partial class AddOrEditMailboxUserControlViewModel : ViewModelBase
+public partial class AddOrEditMailboxUserControlViewModel(Mailbox? mail = null) : ViewModelBase
 {
     public List<string> MailProviders { get; } = [ "Gmail", "Yandex", "Mail.ru", "Outlook", "Другой (IMAP)" ];
 
     [ObservableProperty] private string _errorEmail = string.Empty;
-    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private string _email = string.Empty;
-    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private string _password = string.Empty;
-    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private string _imapServer = string.Empty;
-    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private int _imapPort;
-    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private int _frequencyCheck = 60;
-    [ObservableProperty] private bool _autoCheck = true;
-    [ObservableProperty] private string _selectedProvider = "Gmail";
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private string _email = mail != null ? mail.Email : string.Empty;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private string _password = mail != null ? mail.PasswordEncrypted : string.Empty;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private string _imapServer = mail != null ? mail.ImapServer : string.Empty;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private int _imapPort = mail?.ImapPort ?? 0;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private int _frequencyCheck = mail?.CheckFrequency ?? 60;
+    [ObservableProperty] private bool _autoCheck = mail == null || mail.IsActive;
+    [ObservableProperty] private string _selectedProvider = mail != null ? mail.Provider : "Gmail";
     
     partial void OnSelectedProviderChanged(string value)
     {
@@ -57,6 +57,9 @@ public partial class AddOrEditMailboxUserControlViewModel : ViewModelBase
            && !string.IsNullOrEmpty(ImapServer)
            && ImapPort > 0
            && FrequencyCheck > 0;
+
+    public string ConfirmButtonText
+        => mail == null ? "Добавить" : "Сохранить";
     
     [RelayCommand]
     public void Close()
@@ -65,7 +68,7 @@ public partial class AddOrEditMailboxUserControlViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    public async Task AddEmailAsync()
+    public async Task SaveEmailAsync()
     {
         if (!IsActiveConfirmButton) return;
         
@@ -73,48 +76,42 @@ public partial class AddOrEditMailboxUserControlViewModel : ViewModelBase
         {
             await using var db = new AppDbContext();
             
-            var exists = await db.Mailboxes.AnyAsync(m => m.UserId == AuthService.CurrentSession!.Id && m.Email == Email);
-            
-            if (exists)
+            Mailbox? mailbox;
+
+            if (mail == null)
             {
-                ErrorEmail = $"Почта {Email} уже добавлен для этого пользователя!";
-                return;
+                var exists = await db.Mailboxes.AnyAsync(m => m.UserId == AuthService.CurrentSession!.Id && m.Email == Email);
+                if (exists) {
+                    ErrorEmail = $"Почта {Email} уже добавлена!";
+                    return;
+                }
+                mailbox = new Mailbox { UserId = AuthService.CurrentSession!.Id, CreatedAt = DateTime.UtcNow };
+                db.Mailboxes.Add(mailbox);
+                    
+                Console.WriteLine($"Ящик {mailbox.Email} сохранен, ID: {mailbox.Id}");
             }
-            
-            await using var transaction = await db.Database.BeginTransactionAsync();
-            try
+            else
             {
-                var newMailbox = new Mailbox
-                {
-                    Email = Email,
-                    PasswordEncrypted = Password,
-                    ImapServer = ImapServer,
-                    ImapPort = ImapPort,
-                    UserId = AuthService.CurrentSession!.Id, 
-                    Provider = SelectedProvider,
-                    IsActive = AutoCheck,
-                    CheckFrequency = FrequencyCheck,
-                    SearchFolder = "INBOX",
-                    SearchCriteria = "FROM \"noreply\" OR FROM \"billing\" OR SUBJECT \"subscription\" OR SUBJECT \"payment\"",
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
+                mailbox = await db.Mailboxes.FindAsync(mail.Id);
+                if (mailbox == null) return;
+                    
+                Console.WriteLine($"Ящик {mailbox.Email} изменен, ID: {mailbox.Id}");
+            }
                 
-                db.Mailboxes.Add(newMailbox);
-                await db.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                Console.WriteLine($"Ящик {newMailbox.Email} сохранен, ID: {newMailbox.Id}");
-
-                ClearForm();
-                Close();
-                WeakReferenceMessenger.Default.Send(new RefreshMailboxMessage());
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                throw;
-            }
+            mailbox.Email = Email;
+            mailbox.PasswordEncrypted = Password;
+            mailbox.ImapServer = ImapServer;
+            mailbox.ImapPort = ImapPort;
+            mailbox.Provider = SelectedProvider;
+            mailbox.IsActive = AutoCheck;
+            mailbox.CheckFrequency = FrequencyCheck;
+            mailbox.UpdatedAt = DateTime.UtcNow;
+                
+            await db.SaveChangesAsync();
+                
+            ClearForm();
+            Close();
+            WeakReferenceMessenger.Default.Send(new RefreshMailboxMessage());
         }
         catch (Exception ex)
         {

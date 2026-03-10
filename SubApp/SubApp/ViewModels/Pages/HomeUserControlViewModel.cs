@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -18,6 +20,9 @@ public partial class HomeUserControlViewModel : ViewModelBase
     [ObservableProperty] private bool _hasMoreData = true;
     private static List<Subscription>? _cache = [];
     [ObservableProperty] private int _countSubscription;
+    [ObservableProperty] private double _totalMonthlyCost;
+    [ObservableProperty] private double _totalYearlyCost;
+    [ObservableProperty] private string _nextPaymentSummary;
 
     [RelayCommand]
     public void OpenAddSubscription() 
@@ -34,39 +39,46 @@ public partial class HomeUserControlViewModel : ViewModelBase
     {
         using var db = new AppDbContext();
 
-        CountSubscription = db.Subscriptions.Count(s => s.IsActive);
+        var allActive = db.Subscriptions.Where(s => s.IsActive).Include(s => s.Service).ToList();
+        CountSubscription = allActive.Count;
+        TotalMonthlyCost = allActive.Sum(CalculateIndividualMonthlyCost);
+        TotalYearlyCost = allActive.Sum(CalculateIndividualYearlyCost);
+        
+        // var nextSub = allActive
+        //     .Where(s => s.NextPaymentDate >= DateTime.Now)
+        //     .OrderBy(s => s.NextPaymentDate)
+        //     .FirstOrDefault();
+        
+        // NextPaymentSummary = nextSub != null 
+        //     ? $"({nextSub.Amount:N0} {})" : "0";
 
-        if (_cache.Any())
+        if (_cache != null && _cache.Count != 0)
         {
             Subscriptions = new ObservableCollection<Subscription>(_cache);
-            CheckIfMoreDataAvailable();
+            HasMoreData = Subscriptions.Count < CountSubscription;
             return;
         }
-        
-        var list = db.Subscriptions
-            .Include(s => s.Service)
-            .Where(s => s.IsActive)
-            .OrderBy(s => s.NextPaymentDate)
-            .Take(3)
-            .ToList();
 
-        foreach (var sub in list)
+        var initialList = allActive.OrderBy(s => s.NextPaymentDate).Take(3).ToList();
+        foreach (var sub in initialList)
         {
             Subscriptions.Add(sub);
-            _cache.Add(sub);
+            _cache?.Add(sub);
         }
         
-        CheckIfMoreDataAvailable();
+        HasMoreData = Subscriptions.Count < CountSubscription;
     }
     
     [RelayCommand]
     private void LoadMore()
     {
-        using var db = new AppDbContext();
         var currentCount = Subscriptions.Count;
-        var totalCount = db.Subscriptions.Count(s => s.IsActive);
+        var totalCount = CountSubscription;
+        
         var remaining = totalCount - currentCount;
         if (remaining <= 0) return;
+        
+        using var db = new AppDbContext();
         var toTake = (remaining <= PageSize - 1) ? remaining : PageSize;
 
         var newItems = db.Subscriptions
@@ -80,16 +92,30 @@ public partial class HomeUserControlViewModel : ViewModelBase
         foreach (var item in newItems)
         {
             Subscriptions.Add(item);
-            _cache.Add(item);
+            _cache?.Add(item);
         }
         
         HasMoreData = Subscriptions.Count < totalCount;
     }
     
-    private void CheckIfMoreDataAvailable()
+    private double CalculateIndividualMonthlyCost(Subscription sub)
     {
-        using var db = new AppDbContext();
-        var totalCount = db.Subscriptions.Count(s => s.IsActive);
-        HasMoreData = Subscriptions.Count < totalCount;
+        var amountValue = (double)sub.Amount; 
+
+        return sub.BillingCycle switch
+        {
+            "monthly" => amountValue,
+            "yearly"  => amountValue / 12,
+            "quarterly" => amountValue / 3,
+            "weekly"  => amountValue * 4.33,
+            "custom" when sub.BillingCycleDays > 0 => (amountValue / sub.BillingCycleDays) * 30,
+            _ => 0
+        };
+    }
+    
+    private double CalculateIndividualYearlyCost(Subscription sub)
+    {
+        var monthly = CalculateIndividualMonthlyCost(sub); 
+        return monthly * 12;
     }
 }

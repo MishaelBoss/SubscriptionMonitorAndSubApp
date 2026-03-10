@@ -5,13 +5,15 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.EntityFrameworkCore;
 using SubApp.Data;
+using SubApp.Models;
 using SubApp.Scripts;
 
 namespace SubApp.ViewModels.Components;
 
-public partial class CartMailboxesViewModel(long id) : ViewModelBase
+public partial class CartMailboxesViewModel(long id, Mailbox mail) : ViewModelBase
 {
     private long Id { get; } = id;
+    private Mailbox Mail { get; } = mail;
     [ObservableProperty] private string _email = string.Empty;
     [ObservableProperty] private string _lastCheck = string.Empty;
     [ObservableProperty] private string _provider = string.Empty;
@@ -30,7 +32,7 @@ public partial class CartMailboxesViewModel(long id) : ViewModelBase
     [RelayCommand]
     public void OpenEditEmail()
     {
-        WeakReferenceMessenger.Default.Send(new OpenOrCloseAddOrEditEmailMessage(Id, Email, null, null, null, null));
+        WeakReferenceMessenger.Default.Send(new OpenOrCloseAddOrEditEmailMessage(Mail));
     }
         
     [RelayCommand]

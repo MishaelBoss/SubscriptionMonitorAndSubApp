@@ -56,7 +56,7 @@ namespace SubApp.ViewModels.Pages
                 
                 foreach (var mailbox in mailboxes)
                 {
-                    var viewModel = new CartMailboxesViewModel(mailbox.Id)
+                    var viewModel = new CartMailboxesViewModel(mailbox.Id, mailbox)
                     {
                         Email = mailbox.Email,
                         LastCheck = mailbox.LastChecked?.ToString("g") ?? "Никогда",

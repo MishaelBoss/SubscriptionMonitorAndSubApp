@@ -76,7 +76,8 @@ public partial class MainViewModel : ViewModelBase,
     
     public void Receive(OpenOrCloseAddOrEditEmailMessage message)
     {
-        OverlayContent = OverlayContent is AddOrEditMailboxUserControlViewModel ? null : _addOrEditMailboxUserControlViewModel;
+        // OverlayContent = OverlayContent is new AddOrEditMailboxUserControlViewModel(message.Mailbox) ? null : _addOrEditMailboxUserControlViewModel;
+        OverlayContent = message.Mailbox != null ? new AddOrEditMailboxUserControlViewModel(message.Mailbox) : null;
     }
 
     public void Receive(OpenOrCloseAddOrEditNewSubscriptionMessage message)
@@ -86,10 +87,7 @@ public partial class MainViewModel : ViewModelBase,
     
     public void Receive(OpenOrCloseSubscriptionDetailsMessage message)
     {
-        // OverlayContent = OverlayContent == null ? new ViewSubscriptionUserControlViewModel(message.Sub) : null;
-        OverlayContent = message.Sub != null 
-            ? new ViewSubscriptionUserControlViewModel(message.Sub) 
-            : null;
+        OverlayContent = message.Sub != null ? new ViewSubscriptionUserControlViewModel(message.Sub) : null;
     }
 
     ~MainViewModel() 

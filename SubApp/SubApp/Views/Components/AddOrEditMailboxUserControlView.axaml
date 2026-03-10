@@ -97,7 +97,11 @@
                                IsVisible="{Binding ErrorEmail, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                                TextWrapping="Wrap"
                                TextAlignment="Center"/>
-                    <Button Classes="PrimaryButton" Content="Сохранить изменения" HorizontalAlignment="Stretch" IsEnabled="{Binding IsActiveConfirmButton}" Command="{Binding AddEmailCommand}"/>
+                    <Button Classes="PrimaryButton" 
+                            Content="{Binding ConfirmButtonText}" 
+                            HorizontalAlignment="Stretch" 
+                            IsEnabled="{Binding IsActiveConfirmButton}" 
+                            Command="{Binding SaveEmailCommand}"/>
                 </StackPanel>
             </Grid>
         </Grid>

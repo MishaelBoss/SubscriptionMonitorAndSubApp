@@ -25,19 +25,19 @@
                 <Border Classes="StatCard">
                     <StackPanel>
                         <TextBlock Text="РАСХОДЫ В МЕСЯЦ" Classes="CardHeader"/>
-                        <TextBlock Text="3500 ₽" Classes="CardValue"/>
+                        <TextBlock Text="{Binding TotalMonthlyCost, StringFormat='{}{0:N0} ₽'}" Classes="CardValue"/>
                     </StackPanel>
                 </Border>
                 <Border Classes="StatCard">
                     <StackPanel>
                         <TextBlock Text="РАСХОДЫ В ГОД" Classes="CardHeader"/>
-                        <TextBlock Text="42000 ₽" Classes="CardValue"/>
+                        <TextBlock Text="{Binding TotalYearlyCost, StringFormat='{}{0:N0} ₽'}" Classes="CardValue"/>
                     </StackPanel>
                 </Border>
                 <Border Classes="StatCard">
                     <StackPanel>
                         <TextBlock Text="СКОРО СПИСАНИЕ" Classes="CardHeader" Foreground="#FF453A"/>
-                        <TextBlock Text="0" Classes="CardValue"/>
+                        <TextBlock Text="{Binding NextPaymentSummary}" Classes="CardValue"/>
                     </StackPanel>
                 </Border>
             </UniformGrid>
@@ -48,7 +48,6 @@
                     <Separator Background="#2C2C2E" Height="1"/>
                     
                     <StackPanel HorizontalAlignment="Center" Margin="0,20" Spacing="10">
-                        <PathIcon Data="{StaticResource BoxIcon}" Opacity="0.5"/>
                         <TextBlock Text="Нет платежей" Foreground="#8E8E93" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </StackPanel>
