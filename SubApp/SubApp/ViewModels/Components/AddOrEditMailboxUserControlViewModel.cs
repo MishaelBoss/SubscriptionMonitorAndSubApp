@@ -94,6 +94,8 @@ public partial class AddOrEditMailboxUserControlViewModel : ViewModelBase
     public async Task SaveEmailAsync()
     {
         if (!IsActiveConfirmButton) return;
+
+        await AuthService.TryAutoLoginAsync();
         
         try
         {
@@ -108,6 +110,7 @@ public partial class AddOrEditMailboxUserControlViewModel : ViewModelBase
                     ErrorEmail = $"Почта {Email} уже добавлена!";
                     return;
                 }
+                
                 mailbox = new Mailbox
                 {
                     UserId = AuthService.CurrentSession!.Id, CreatedAt = DateTime.UtcNow,

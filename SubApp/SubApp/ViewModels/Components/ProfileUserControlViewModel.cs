@@ -6,6 +6,7 @@ using SubApp.Scripts;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using SubApp.Models;
 
 namespace SubApp.ViewModels.Components;
 
@@ -17,6 +18,9 @@ public partial class ProfileUserControlViewModel : ViewModelBase
     [ObservableProperty][NotifyPropertyChangedFor(nameof(FullName))] private string? _lastName;
     [ObservableProperty] private string? _phone;
     [ObservableProperty] private DateTime? _dateJoined;
+
+    private User? User { get; set; }
+    private Profile? Profile { get; set; }
 
     public string FullName => (string.IsNullOrEmpty(FirstName) && string.IsNullOrEmpty(LastName))
         ? "Имя не указано"
@@ -34,6 +38,12 @@ public partial class ProfileUserControlViewModel : ViewModelBase
         AuthService.Logout();
     }
 
+    [RelayCommand]
+    public void Edit()
+    {
+        WeakReferenceMessenger.Default.Send(new OpenOrCloseEditUserAndProfileMessage(User, Profile));
+    }
+
     public ProfileUserControlViewModel() 
     {
         Task.Run(async () => await InitializeAsync());
@@ -46,23 +56,23 @@ public partial class ProfileUserControlViewModel : ViewModelBase
         var currentUserId = AuthService.CurrentSession?.Id;
         if (currentUserId == null) return;
 
-        using var db = new AppDbContext();
+        await using var db = new AppDbContext();
 
-        var user = db.Users.FirstOrDefault(u => u.Id == currentUserId);
-        var profile = db.Profiles.FirstOrDefault(p => p.UserId == currentUserId);
+        User = db.Users.FirstOrDefault(u => u.Id == currentUserId);
+        Profile = db.Profiles.FirstOrDefault(p => p.UserId == currentUserId);
 
-        if (user != null)
+        if (User != null)
         {
-            UserName = !string.IsNullOrWhiteSpace(user.Username) ? user.Username : "Нет указано";
-            FirstName = user.FirstName ?? "Не указано";
-            LastName = user.LastName ?? "Не указано";
-            Email = !string.IsNullOrWhiteSpace(user.Email) ? user.Email : "Нет указано";
-            DateJoined = user.DateJoined;
+            UserName = !string.IsNullOrWhiteSpace(User?.Username) ? User.Username : "Нет указано";
+            FirstName = User?.FirstName ?? "Не указано";
+            LastName = User?.LastName ?? "Не указано";
+            Email = !string.IsNullOrWhiteSpace(User?.Email) ? User.Email : "Нет указано";
+            DateJoined = User?.DateJoined;
         }
 
-        if (profile != null)
+        if (Profile != null)
         {
-            Phone = !string.IsNullOrWhiteSpace(profile.Phone) ? profile.Phone : "Нет указано";
+            Phone = !string.IsNullOrWhiteSpace(Profile.Phone) ? Profile.Phone : "Нет указано";
         }
     }
 }

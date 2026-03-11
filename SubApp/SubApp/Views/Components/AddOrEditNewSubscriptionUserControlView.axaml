@@ -11,6 +11,7 @@
 
     <UserControl.Styles>
         <StyleInclude Source="/Styles/ModernStyles.axaml"/>
+        <StyleInclude Source="/Styles/ButtonsStyles.axaml"/>
     </UserControl.Styles>
     
     <UserControl.Resources>

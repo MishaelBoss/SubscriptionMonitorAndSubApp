@@ -33,7 +33,7 @@
 
         <Style Selector="TabItem:selected /template/ Border#PART_SelectedPipe">
                 <Setter Property="Background" Value="#0079FF"/>
-                <Setter Property="Height" Value="4"/>
+                <Setter Property="Height" Value="3"/>
                 <Setter Property="Margin" Value="0,50,0,0"/> 
                 <Setter Property="VerticalAlignment" Value="Bottom"/>
         </Style>

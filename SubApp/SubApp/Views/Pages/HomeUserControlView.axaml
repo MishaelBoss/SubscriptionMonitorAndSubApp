@@ -9,7 +9,7 @@
 
     <UserControl.Styles>
         <StyleInclude Source="/Styles/ContentCardStyles.axaml"/>
-        <StyleInclude Source="/Styles/HomePageStyles.axaml"/>
+        <StyleInclude Source="/Styles/ButtonsStyles.axaml"/>
 	</UserControl.Styles>
 
     <ScrollViewer>

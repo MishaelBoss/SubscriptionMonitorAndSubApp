@@ -4,7 +4,6 @@
     <Style Selector="TextBox.ModernInput">
         <Setter Property="Background" Value="#2C2C2E"/>
         <Setter Property="Foreground" Value="White"/>
-        <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="CornerRadius" Value="8"/>
         <Setter Property="MinHeight" Value="45"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>
@@ -22,27 +21,6 @@
         
     <Style Selector="TextBox.ModernInput:focus">
         <Setter Property="Foreground" Value="White"/>
-    </Style>
-
-    <Style Selector="Button.PrimaryButton">
-        <Setter Property="Background" Value="#007AFF"/>
-        <Setter Property="Foreground" Value="White"/>
-        <Setter Property="Height" Value="50"/>
-        <Setter Property="CornerRadius" Value="12"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="HorizontalContentAlignment" Value="Center"/>
-        <Setter Property="VerticalContentAlignment" Value="Center"/>
-    </Style>
-
-    <Style Selector="Button.PrimaryButton:pressed /template/ ContentPresenter">
-        <Setter Property="Background" Value="#0056B3"/>
-        <Setter Property="Opacity" Value="0.8"/>
-    </Style>
-    
-    <Style Selector="Button.PrimaryButton:disabled /template/ ContentPresenter">
-        <Setter Property="Background" Value="#3A3A3C" />
-        <Setter Property="Foreground" Value="#8E8E93" />
-        <Setter Property="Opacity" Value="0.6" /> 
     </Style>
     
     <Style Selector="ComboBox.ModernCombo">

@@ -1,31 +1,5 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-
-        <Style Selector="Button.AddButton">
-                <Setter Property="Background" Value="#5856D6"/>
-                <Setter Property="Foreground" Value="White"/>
-                <Setter Property="Padding" Value="20,8"/>
-                <Setter Property="CornerRadius" Value="20"/>
-        </Style>
-    
-        <Style Selector="Button.AddButton /template/ ContentPresenter">
-                <Setter Property="Transitions">
-                        <Transitions>
-                                <BrushTransition Property="Background" Duration="0:0:0.3"/>
-                        </Transitions>
-                </Setter>
-        </Style>
-    
-        <Style Selector="Button.AddButton:pressed /template/ ContentPresenter">
-                <Setter Property="Foreground" Value="White"/>
-        
-                <Setter Property="Background">
-                        <RadialGradientBrush Center="50%,50%" Radius="0.8">
-                                <GradientStop Offset="0" Color="#8C8AFF"/>
-                                <GradientStop Offset="1" Color="#5856D6"/>
-                        </RadialGradientBrush>
-                </Setter>
-        </Style>
         
         <Style Selector="Button.ActionButton">
                 <Setter Property="FontSize" Value="11"/>

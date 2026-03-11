@@ -16,7 +16,8 @@ public partial class MainViewModel : ViewModelBase,
     IRecipient<OpenOrCloseRegistrationMessage>,
     IRecipient<OpenOrCloseAddOrEditEmailMessage>,
     IRecipient<OpenOrCloseAddOrEditNewSubscriptionMessage>,
-    IRecipient<OpenOrCloseSubscriptionDetailsMessage>
+    IRecipient<OpenOrCloseSubscriptionDetailsMessage>,
+    IRecipient<OpenOrCloseEditUserAndProfileMessage>
 {
     [ObservableProperty] private ViewModelBase? _currentPage;
     [ObservableProperty] private ViewModelBase? _overlayContent;
@@ -29,7 +30,6 @@ public partial class MainViewModel : ViewModelBase,
     private readonly ProfileUserControlViewModel _profileUserControlViewModel = new();
     private readonly LoginUserControlViewModel _loginUserControlViewModel = new();
     private readonly RegistrationUserControlViewModel _registrationUserControlViewModel = new();
-    private readonly AddOrEditMailboxUserControlViewModel _addOrEditMailboxUserControlViewModel = new();
     private readonly AddOrEditNewSubscriptionUserControlViewModel _addOrEditNewSubscriptionUserControlView = new();
 
     public MainViewModel() 
@@ -79,7 +79,7 @@ public partial class MainViewModel : ViewModelBase,
         // OverlayContent = OverlayContent is new AddOrEditMailboxUserControlViewModel(message.Mailbox) ? null : _addOrEditMailboxUserControlViewModel;
         OverlayContent = OverlayContent is  AddOrEditMailboxUserControlViewModel ? null : new AddOrEditMailboxUserControlViewModel(message.Mailbox);;
     }
-
+    
     public void Receive(OpenOrCloseAddOrEditNewSubscriptionMessage message)
     {
         OverlayContent = OverlayContent is AddOrEditNewSubscriptionUserControlViewModel ? null : _addOrEditNewSubscriptionUserControlView;
@@ -88,6 +88,11 @@ public partial class MainViewModel : ViewModelBase,
     public void Receive(OpenOrCloseSubscriptionDetailsMessage message)
     {
         OverlayContent = message.Sub != null ? new ViewSubscriptionUserControlViewModel(message.Sub) : null;
+    }
+    
+    public void Receive(OpenOrCloseEditUserAndProfileMessage message)
+    {
+        OverlayContent = OverlayContent is  EditProfileUserControlViewModel ? null : new EditProfileUserControlViewModel(message.User, message.Profile);;
     }
 
     ~MainViewModel() 

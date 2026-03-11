@@ -1,0 +1,101 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SubApp.ViewModels.Components"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:EditProfileUserControlViewModel"
+             x:Class="SubApp.Views.Components.EditProfileUserControlView">
+    
+    <UserControl.Styles>
+        <StyleInclude Source="/Styles/ModernStyles.axaml"/>
+        <StyleInclude Source="/Styles/ButtonsStyles.axaml"/>
+    </UserControl.Styles>
+
+    <Border Background="#0a0c0f">
+		<Grid RowDefinitions="Auto,*">
+            <Grid Grid.Row="0">
+                <Button Background="Transparent" 
+                        BorderThickness="0" 
+                        Padding="5" 
+                        Margin="10,0,0,0"
+                        Command="{Binding CloseCommand}">
+                    <Image Source="/Assets/back-64.png" Width="32" Height="32"/>
+                </Button>
+            </Grid>
+
+            <Grid Grid.Row="1">
+                <StackPanel Margin="16" Spacing="20">
+                    <Border Background="#1C1C1E" CornerRadius="12" Padding="16">
+                        <StackPanel Spacing="15">
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="ЛОГИН" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
+                                <TextBox Text="{Binding UserName}" 
+                                         Classes="ModernInput"
+                                         InputMethod.IsInputMethodEnabled="True"/>
+                            </StackPanel>
+                            
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="ИМЯ" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
+                                <TextBox Text="{Binding FirstName}" 
+                                         Classes="ModernInput"
+                                         InputMethod.IsInputMethodEnabled="True"/>
+                            </StackPanel>
+
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="ФАМИЛИЯ" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
+                                <TextBox Text="{Binding LastName}" 
+                                         Classes="ModernInput"/>
+                            </StackPanel>
+                            
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="ТЕЛЕФОН" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
+                                <TextBox Text="{Binding Phone}" 
+                                         Classes="ModernInput"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                    
+                    <Border Background="#1C1C1E" CornerRadius="12" Padding="16">
+                        <StackPanel Spacing="15">
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="EMAIL АДРЕС" FontSize="11" FontWeight="Bold" Foreground="#8E8E93"/>
+                                <TextBox Text="{Binding Email}" 
+                                         Classes="ModernInput"
+                                         InputMethod.IsInputMethodEnabled="True"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="#1C1C1E" CornerRadius="12" Padding="16">
+                        <StackPanel Spacing="15">
+                            <CheckBox IsChecked="{Binding EmailNotifications}" Margin="0,5">
+                                <TextBlock Text="Получать уведомления по email" 
+                                           Foreground="#8E8E93" 
+                                           FontSize="13"/>
+                            </CheckBox>
+                            
+                            <CheckBox IsChecked="{Binding PushNotifications}" Margin="0,5">
+                                <TextBlock Text="Получать push-уведомления" 
+                                           Foreground="#8E8E93" 
+                                           FontSize="13"/>
+                            </CheckBox>
+                        </StackPanel>
+                    </Border>
+                    <TextBlock Text="{Binding ErrorEdit}" 
+                               Foreground="#FF5252" 
+                               FontSize="12" 
+                               HorizontalAlignment="Center"
+                               IsVisible="{Binding ErrorEdit, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"/>
+                    <Button Classes="PrimaryButton" 
+                            Content="Изменить" 
+                            HorizontalAlignment="Stretch" 
+                            IsEnabled="{Binding IsActiveConfirmButton}" 
+                            Command="{Binding SaveCommand}"/>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

@@ -10,6 +10,7 @@
     <UserControl.Styles>
         <StyleInclude Source="/Styles/ContentCardStyles.axaml"/>
         <StyleInclude Source="/Styles/EmailsStyles.axaml"/>
+        <StyleInclude Source="/Styles/ButtonsStyles.axaml"/>
     </UserControl.Styles>
     
      <ScrollViewer>
