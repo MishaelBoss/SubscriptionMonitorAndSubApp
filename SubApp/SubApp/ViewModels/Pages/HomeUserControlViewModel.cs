@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Globalization;
-using System.Linq;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.EntityFrameworkCore;
 using SubApp.Data;
 using SubApp.Models;
 using SubApp.Scripts;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SubApp.ViewModels.Pages;
 
@@ -32,14 +31,16 @@ public partial class HomeUserControlViewModel : ViewModelBase
 
     public HomeUserControlViewModel()
     {
-        LoadSubscriptions();
+        _  = LoadSubscriptions();
     }
 
-    private void LoadSubscriptions() 
+    private async Task LoadSubscriptions() 
     {
+        await AuthService.TryAutoLoginAsync();
+
         using var db = new AppDbContext();
 
-        var allActive = db.Subscriptions.Where(s => s.IsActive).Include(s => s.Service).ToList();
+        var allActive = db.Subscriptions.Where(s => s.IsActive).Where(s => s.UserId == AuthService.CurrentSession!.Id).Include(s => s.Service).ToList();
         CountSubscription = allActive.Count;
         TotalMonthlyCost = allActive.Sum(CalculateIndividualMonthlyCost);
         TotalYearlyCost = allActive.Sum(CalculateIndividualYearlyCost);

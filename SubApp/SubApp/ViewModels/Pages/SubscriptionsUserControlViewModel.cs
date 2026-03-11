@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -21,7 +22,7 @@ namespace SubApp.ViewModels.Pages
 
         public SubscriptionsUserControlViewModel()
         {
-            Filter();
+            _ = Filter();
         }
 
         [RelayCommand]
@@ -32,14 +33,16 @@ namespace SubApp.ViewModels.Pages
         }
         
         partial void OnSelectedStatusChanged(object value) 
-            => Filter();
+            => _ = Filter();
 
-        private void Filter()
+        private async Task Filter()
         {
+            await AuthService.TryAutoLoginAsync();
+
             using var db = new AppDbContext();
             var query = db.Subscriptions.Include(s => s.Service).AsQueryable();
 
-            if (SelectedStatus is SubscriptionStatus status) query = query.Where(s => s.Status == status.ToString());
+            if (SelectedStatus is SubscriptionStatus status) query = query.Where(s => s.Status == status.ToString()).Where(s => s.UserId == AuthService.CurrentSession!.Id);
             
             Subscriptions = new ObservableCollection<Subscription>(query.ToList());
         }

@@ -51,7 +51,7 @@
                                         </Border>
                 
                                         <StackPanel Spacing="5" HorizontalAlignment="Center">
-                                            <TextBlock Text="Михаил Яковлев" 
+                                            <TextBlock Text="{Binding UserName}" 
                                                        FontSize="20"
                                                        FontWeight="SemiBold" 
                                                        HorizontalAlignment="Center"
@@ -74,21 +74,28 @@
                                         <StackPanel Spacing="15">
                                             <StackPanel>
                                                 <TextBlock Text="Email" FontSize="12" Foreground="Gray" Margin="0,0,0,4"/>
-                                                <TextBlock Text="akovlevm273@gmail.com" FontSize="15"/>
+                                                <TextBlock Text="{Binding Email}" FontSize="15"/>
+                                            </StackPanel>
+                    
+                                            <Separator Background="#2D2D2D" Height="1"/>
+
+                                            <StackPanel>
+                                                <TextBlock Text="Имя и фамилия" FontSize="12" Foreground="Gray" Margin="0,0,0,4"/>
+                                                <TextBlock Text="{Binding FullName}" FontSize="15"/>
                                             </StackPanel>
                     
                                             <Separator Background="#2D2D2D" Height="1"/>
                     
                                             <StackPanel>
                                                 <TextBlock Text="Телефон" FontSize="12" Foreground="Gray" Margin="0,0,0,4"/>
-                                                <TextBlock Text="Не указан" FontSize="15" FontStyle="Italic" Foreground="#555555"/>
+                                                <TextBlock Text="{Binding Phone}" FontSize="15" FontStyle="Italic" Foreground="#555555"/>
                                             </StackPanel>
                     
                                             <Separator Background="#2D2D2D" Height="1"/>
                     
                                             <StackPanel>
                                                 <TextBlock Text="Регистрация" FontSize="12" Foreground="Gray" Margin="0,0,0,4"/>
-                                                <TextBlock Text="05.03.2026" FontSize="15"/>
+                                                <TextBlock Text="{Binding DateJoined, StringFormat='{}{0:dd.MM.yyyy}'}" FontSize="15"/>
                                             </StackPanel>
                                         </StackPanel>
                                     </StackPanel>
