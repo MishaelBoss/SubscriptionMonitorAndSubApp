@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -11,43 +12,65 @@ using SubApp.Scripts;
 
 namespace SubApp.ViewModels.Components;
 
-public partial class AddOrEditMailboxUserControlViewModel(Mailbox? mail = null) : ViewModelBase
+public partial class AddOrEditMailboxUserControlViewModel : ViewModelBase
 {
     public List<string> MailProviders { get; } = [ "Gmail", "Yandex", "Mail.ru", "Outlook", "Другой (IMAP)" ];
+    
+    private static readonly Dictionary<string, (string Server, int Port)> Providers = new()
+    {
+        { "Gmail", ("imap.gmail.com", 993) },
+        { "Yandex", ("imap.yandex.ru", 993) },
+        { "Mail.ru", ("imap.mail.ru", 993) },
+        { "Outlook", ("outlook.office365.com", 993) }
+    };
+    
+    public AddOrEditMailboxUserControlViewModel(Mailbox? mail = null)
+    {
+        Mailbox = mail;
+        
+        _selectedProvider = mail?.Provider ?? "Gmail";
+
+        Email = mail != null ? mail.Email : string.Empty;
+        Password = mail != null ? mail.PasswordEncrypted : string.Empty;
+        ImapServer = mail != null ? mail.ImapServer : string.Empty;
+        ImapPort = mail?.ImapPort ?? 0;
+        FrequencyCheck = mail?.CheckFrequency ?? 60;
+        AutoCheck = mail == null || mail.IsActive;
+        
+        if (mail != null)
+        {
+            _imapServer = mail.ImapServer;
+            _imapPort = mail.ImapPort;
+        }
+        else if (Providers.TryGetValue(_selectedProvider, out var config))
+        {
+            _imapServer = config.Server;
+            _imapPort = config.Port;
+        }
+    }
+
+    private Mailbox? Mailbox { get; }
 
     [ObservableProperty] private string _errorEmail = string.Empty;
-    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private string _email = mail != null ? mail.Email : string.Empty;
-    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private string _password = mail != null ? mail.PasswordEncrypted : string.Empty;
-    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private string _imapServer = mail != null ? mail.ImapServer : string.Empty;
-    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private int _imapPort = mail?.ImapPort ?? 0;
-    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private int _frequencyCheck = mail?.CheckFrequency ?? 60;
-    [ObservableProperty] private bool _autoCheck = mail == null || mail.IsActive;
-    [ObservableProperty] private string _selectedProvider = mail != null ? mail.Provider : "Gmail";
-    
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private string _email;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private string _password;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private string _imapServer;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private int _imapPort ;
+    [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private int _frequencyCheck;
+    [ObservableProperty] private bool _autoCheck;
+    [ObservableProperty] private string _selectedProvider;
+
     partial void OnSelectedProviderChanged(string value)
     {
-        switch (value)
+        if (Providers.TryGetValue(value, out var config))
         {
-            case "Gmail":
-                ImapServer = "imap.gmail.com";
-                ImapPort = 993;
-                break;
-            case "Yandex":
-                ImapServer = "imap.yandex.ru";
-                ImapPort = 993;
-                break;
-            case "Mail.ru":
-                ImapServer = "imap.mail.ru";
-                ImapPort = 993;
-                break;
-            case "Outlook":
-                ImapServer = "outlook.office365.com";
-                ImapPort = 993;
-                break;
-            default:
-                ImapServer = string.Empty;
-                ImapPort = 0;
-                break;
+            ImapServer = config.Server;
+            ImapPort = config.Port;
+        }
+        else
+        {
+            ImapServer = string.Empty;
+            ImapPort = 0;
         }
     }
 
@@ -59,7 +82,7 @@ public partial class AddOrEditMailboxUserControlViewModel(Mailbox? mail = null) 
            && FrequencyCheck > 0;
 
     public string ConfirmButtonText
-        => mail == null ? "Добавить" : "Сохранить";
+        => Mailbox == null ? "Добавить" : "Сохранить";
     
     [RelayCommand]
     public void Close()
@@ -78,22 +101,29 @@ public partial class AddOrEditMailboxUserControlViewModel(Mailbox? mail = null) 
             
             Mailbox? mailbox;
 
-            if (mail == null)
+            if (Mailbox == null)
             {
                 var exists = await db.Mailboxes.AnyAsync(m => m.UserId == AuthService.CurrentSession!.Id && m.Email == Email);
                 if (exists) {
                     ErrorEmail = $"Почта {Email} уже добавлена!";
                     return;
                 }
-                mailbox = new Mailbox { UserId = AuthService.CurrentSession!.Id, CreatedAt = DateTime.UtcNow };
+                mailbox = new Mailbox
+                {
+                    UserId = AuthService.CurrentSession!.Id, CreatedAt = DateTime.UtcNow,
+                    SearchFolder = "INBOX",
+                    SearchCriteria = "FROM \"noreply\" OR FROM \"billing\" OR SUBJECT \"subscription\" OR SUBJECT \"payment\""
+                };
                 db.Mailboxes.Add(mailbox);
                     
                 Console.WriteLine($"Ящик {mailbox.Email} сохранен, ID: {mailbox.Id}");
             }
             else
             {
-                mailbox = await db.Mailboxes.FindAsync(mail.Id);
+                mailbox = await db.Mailboxes.FindAsync(Mailbox.Id);
                 if (mailbox == null) return;
+                mailbox.SearchFolder = Mailbox.SearchFolder;
+                mailbox.SearchCriteria = Mailbox.SearchCriteria;
                     
                 Console.WriteLine($"Ящик {mailbox.Email} изменен, ID: {mailbox.Id}");
             }

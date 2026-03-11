@@ -56,14 +56,7 @@ namespace SubApp.ViewModels.Pages
                 
                 foreach (var mailbox in mailboxes)
                 {
-                    var viewModel = new CartMailboxesViewModel(mailbox.Id, mailbox)
-                    {
-                        Email = mailbox.Email,
-                        LastCheck = mailbox.LastChecked?.ToString("g") ?? "Никогда",
-                        Provider = mailbox.Provider ?? "Другой",
-                        Status = mailbox.IsActive ? "Активен" : "Отключен"
-                    };
-            
+                    var viewModel = new CartMailboxesViewModel(mailbox);
                     CartMailboxesViewModels.Add(viewModel);
                 }
             }

@@ -10,14 +10,12 @@ using SubApp.Scripts;
 
 namespace SubApp.ViewModels.Components;
 
-public partial class CartMailboxesViewModel(long id, Mailbox mail) : ViewModelBase
+public partial class CartMailboxesViewModel(Mailbox mail) : ViewModelBase
 {
-    private long Id { get; } = id;
-    private Mailbox Mail { get; } = mail;
-    [ObservableProperty] private string _email = string.Empty;
-    [ObservableProperty] private string _lastCheck = string.Empty;
-    [ObservableProperty] private string _provider = string.Empty;
-    [ObservableProperty] private string _status = string.Empty;
+    [ObservableProperty] private string _email = mail.Email;
+    [ObservableProperty] private string? _lastCheck = mail.LastChecked?.ToString("g") ?? "Никогда";
+    [ObservableProperty] private string _provider = mail.Provider.ToString() ?? "Другой";
+    [ObservableProperty] private string _status = mail is { IsActive: true } ? "Активен" : "Отключен";
     
     [RelayCommand]
     public void Run()
@@ -32,7 +30,7 @@ public partial class CartMailboxesViewModel(long id, Mailbox mail) : ViewModelBa
     [RelayCommand]
     public void OpenEditEmail()
     {
-        WeakReferenceMessenger.Default.Send(new OpenOrCloseAddOrEditEmailMessage(Mail));
+        WeakReferenceMessenger.Default.Send(new OpenOrCloseAddOrEditEmailMessage(mail));
     }
         
     [RelayCommand]
@@ -42,7 +40,7 @@ public partial class CartMailboxesViewModel(long id, Mailbox mail) : ViewModelBa
         {
             await using var db = new AppDbContext();
             
-            var mailbox = await db.Mailboxes.FirstOrDefaultAsync(m => m.Id == Id);
+            var mailbox = await db.Mailboxes.FirstOrDefaultAsync(m => m.Id == mail.Id);
             if (mailbox == null) return;
             
             db.Mailboxes.Remove(mailbox);
@@ -50,7 +48,7 @@ public partial class CartMailboxesViewModel(long id, Mailbox mail) : ViewModelBa
 
             WeakReferenceMessenger.Default.Send(new RefreshMailboxMessage());
 
-            Console.WriteLine($"Ящик с ID {Id} удален.");
+            Console.WriteLine($"Ящик с ID {mail.Id} удален.");
         }
         catch (Exception ex)
         {

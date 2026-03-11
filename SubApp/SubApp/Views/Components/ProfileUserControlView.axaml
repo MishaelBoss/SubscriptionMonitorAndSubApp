@@ -9,6 +9,8 @@
 
     <UserControl.Styles>
 		<StyleInclude Source="/Styles/DashboardStyles.axaml"/>
+        <StyleInclude Source="/Styles/ContentCardStyles.axaml"/>
+        <StyleInclude Source="/Styles/TabItemStyles.axaml"/>
 	</UserControl.Styles>
 
     <Border Background="#0a0c0f">
@@ -38,7 +40,68 @@
             </Grid>
 
             <Grid Grid.Row="1">
+                <TabControl> 
+                    <TabItem Header="Основное">
+                        <ScrollViewer>
+                            <StackPanel Margin="12" Spacing="15">
+                                <Border Classes="ContentCard">
+                                    <StackPanel Spacing="10">
+                                        <Border Width="90" Height="90" CornerRadius="45" Background="#2D2D2D">
+                                            <PathIcon Data="{StaticResource PersonRegular}" Width="40" Height="40" Foreground="Gray"/>
+                                        </Border>
+                
+                                        <StackPanel Spacing="5" HorizontalAlignment="Center">
+                                            <TextBlock Text="Михаил Яковлев" 
+                                                       FontSize="20"
+                                                       FontWeight="SemiBold" 
+                                                       HorizontalAlignment="Center"
+                                                       Foreground="White"/>
+                                        </StackPanel>
 
+                                        <Button HorizontalAlignment="Center" Margin="0,10,0,5" Classes="AddButton">
+                                            <StackPanel Orientation="Horizontal" Spacing="5">
+                                                <TextBlock Text="Редактировать" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+                                
+                                <Border Classes="ContentCard">
+                                    <StackPanel Spacing="10">
+                                        <TextBlock Text="Личные данные" Classes="SectionHeader"/>
+                                        <Separator Background="#2C2C2E" Height="1"/>
+                                    
+                                        <StackPanel Spacing="15">
+                                            <StackPanel>
+                                                <TextBlock Text="Email" FontSize="12" Foreground="Gray" Margin="0,0,0,4"/>
+                                                <TextBlock Text="akovlevm273@gmail.com" FontSize="15"/>
+                                            </StackPanel>
+                    
+                                            <Separator Background="#2D2D2D" Height="1"/>
+                    
+                                            <StackPanel>
+                                                <TextBlock Text="Телефон" FontSize="12" Foreground="Gray" Margin="0,0,0,4"/>
+                                                <TextBlock Text="Не указан" FontSize="15" FontStyle="Italic" Foreground="#555555"/>
+                                            </StackPanel>
+                    
+                                            <Separator Background="#2D2D2D" Height="1"/>
+                    
+                                            <StackPanel>
+                                                <TextBlock Text="Регистрация" FontSize="12" Foreground="Gray" Margin="0,0,0,4"/>
+                                                <TextBlock Text="05.03.2026" FontSize="15"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </TabItem>
+                    <TabItem Header="Моя почта">
+                        <ScrollViewer>
+                            
+                        </ScrollViewer>
+                    </TabItem>
+                </TabControl>
             </Grid>
         </Grid>
     </Border>

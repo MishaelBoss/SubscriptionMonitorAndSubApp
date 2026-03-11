@@ -77,7 +77,7 @@ public partial class MainViewModel : ViewModelBase,
     public void Receive(OpenOrCloseAddOrEditEmailMessage message)
     {
         // OverlayContent = OverlayContent is new AddOrEditMailboxUserControlViewModel(message.Mailbox) ? null : _addOrEditMailboxUserControlViewModel;
-        OverlayContent = message.Mailbox != null ? new AddOrEditMailboxUserControlViewModel(message.Mailbox) : null;
+        OverlayContent = OverlayContent is  AddOrEditMailboxUserControlViewModel ? null : new AddOrEditMailboxUserControlViewModel(message.Mailbox);;
     }
 
     public void Receive(OpenOrCloseAddOrEditNewSubscriptionMessage message)
