@@ -34,25 +34,36 @@ public partial class CartMailboxesViewModel(Mailbox mail) : ViewModelBase
     }
         
     [RelayCommand]
-    public async Task OpenDeleteEmail()
+    public void OpenDeleteEmail()
     {
-        try
-        {
+        // try
+        // {
+        //     await using var db = new AppDbContext();
+        //     
+        //     var mailbox = await db.Mailboxes.FirstOrDefaultAsync(m => m.Id == mail.Id);
+        //     if (mailbox == null) return;
+        //     
+        //     db.Mailboxes.Remove(mailbox);
+        //     await db.SaveChangesAsync();
+        //
+        //     WeakReferenceMessenger.Default.Send(new RefreshMailboxMessage());
+        //
+        //     Console.WriteLine($"Ящик с ID {mail.Id} удален.");
+        // }
+        // catch (Exception ex)
+        // {
+        //     Console.WriteLine($"Ошибка при удалении: {ex.
+
+        WeakReferenceMessenger.Default.Send(new OpenOrCloseConfirmDelete(async () => {
             await using var db = new AppDbContext();
-            
             var mailbox = await db.Mailboxes.FirstOrDefaultAsync(m => m.Id == mail.Id);
-            if (mailbox == null) return;
-            
-            db.Mailboxes.Remove(mailbox);
-            await db.SaveChangesAsync();
+            if (mailbox != null)
+            {
+                db.Mailboxes.Remove(mailbox);
+                await db.SaveChangesAsync();
+            }
 
             WeakReferenceMessenger.Default.Send(new RefreshMailboxMessage());
-
-            Console.WriteLine($"Ящик с ID {mail.Id} удален.");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Ошибка при удалении: {ex.Message}");
-        }
+        }));
     }
 }

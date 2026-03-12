@@ -17,7 +17,8 @@ public partial class MainViewModel : ViewModelBase,
     IRecipient<OpenOrCloseAddOrEditEmailMessage>,
     IRecipient<OpenOrCloseAddOrEditNewSubscriptionMessage>,
     IRecipient<OpenOrCloseSubscriptionDetailsMessage>,
-    IRecipient<OpenOrCloseEditUserAndProfileMessage>
+    IRecipient<OpenOrCloseEditUserAndProfileMessage>,
+    IRecipient<OpenOrCloseConfirmDelete>
 {
     [ObservableProperty] private ViewModelBase? _currentPage;
     [ObservableProperty] private ViewModelBase? _overlayContent;
@@ -93,6 +94,11 @@ public partial class MainViewModel : ViewModelBase,
     public void Receive(OpenOrCloseEditUserAndProfileMessage message)
     {
         OverlayContent = OverlayContent is  EditProfileUserControlViewModel ? null : new EditProfileUserControlViewModel(message.User, message.Profile);;
+    }
+    
+    public void Receive(OpenOrCloseConfirmDelete message)
+    {
+        OverlayContent = OverlayContent is ConfirmDeleteUserControlViewModel ? null : new ConfirmDeleteUserControlViewModel(message.DeleteAction);;
     }
 
     ~MainViewModel() 
