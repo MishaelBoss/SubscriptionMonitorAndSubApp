@@ -19,9 +19,9 @@ public partial class AddOrEditNewSubscriptionUserControlViewModel : ViewModelBas
     public List<Currency> Currencies { get; } = [.. Enum.GetValues<Currency>()];
     public List<SubscriptionStatus> Status { get; } = 
     [ 
-        SubscriptionStatus.Active, 
-        SubscriptionStatus.Paused, 
-        SubscriptionStatus.Trial 
+        SubscriptionStatus.active, 
+        SubscriptionStatus.paused, 
+        SubscriptionStatus.trial 
     ];
 
     private Subscription? Sub { get; }
@@ -29,10 +29,10 @@ public partial class AddOrEditNewSubscriptionUserControlViewModel : ViewModelBas
     [ObservableProperty] private string _erroredSubscription = string.Empty;
     [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private Service? _selectedService;
     [ObservableProperty] private string _subscriptionName = string.Empty;
-    [ObservableProperty] private BillingCycle _selectedPaymentPeriod = BillingCycle.Monthly;
+    [ObservableProperty] private BillingCycle _selectedPaymentPeriod = BillingCycle.monthly;
     [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private decimal? _sum;
     [ObservableProperty] private Currency _selectedCurrency = Currency.RUB;
-    [ObservableProperty] private SubscriptionStatus _selectedStatus = SubscriptionStatus.Active;
+    [ObservableProperty] private SubscriptionStatus _selectedStatus = SubscriptionStatus.active;
     [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private DateTime? _startDate = DateTime.UtcNow;
     [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private DateTime? _nextPaymentDate;
     [ObservableProperty] private int? _daysPeriod = 30;
@@ -150,10 +150,10 @@ public partial class AddOrEditNewSubscriptionUserControlViewModel : ViewModelBas
         ErroredSubscription = string.Empty;
         SelectedService = null;
         SubscriptionName = string.Empty;
-        SelectedPaymentPeriod = BillingCycle.Monthly;
+        SelectedPaymentPeriod = BillingCycle.monthly;
         Sum = 0;
         SelectedCurrency = Currency.RUB;
-        SelectedStatus = SubscriptionStatus.Active;
+        SelectedStatus = SubscriptionStatus.active;
         StartDate = DateTime.UtcNow;
         NextPaymentDate = null;
         DaysPeriod = 30;

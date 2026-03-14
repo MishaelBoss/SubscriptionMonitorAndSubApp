@@ -10,6 +10,7 @@ using SubApp.ViewModels;
 using SubApp.ViewModels.Components;
 using SubApp.Views;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SubApp;
 
@@ -20,7 +21,7 @@ public partial class App : Application
         AvaloniaXamlLoader.Load(this);
     }
 
-    public override async void OnFrameworkInitializationCompleted()
+    public override void OnFrameworkInitializationCompleted()
     {
         var services = new ServiceCollection();
         services.AddDbContext<AppDbContext>();
@@ -43,18 +44,33 @@ public partial class App : Application
             };
         }
         
-        if (!await AuthService.TryAutoLoginAsync())
+        Task.Run(async () => 
         {
-            WeakReferenceMessenger.Default.Send(new OpenOrCloseLoginMessage());
-        }
+            if (!await AuthService.TryAutoLoginAsync())
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => 
+                    WeakReferenceMessenger.Default.Send(new OpenOrCloseLoginMessage()));
+            }
+            
+            var mailWorker = new Services.MailBackgroundWorker();
+            mailWorker.Start();
+        });
         
-        var culture = new System.Globalization.CultureInfo("ru-RU");
-        culture.DateTimeFormat.ShortDatePattern = "dd.MM.yyyy"; 
-        culture.NumberFormat.NumberDecimalSeparator = ".";
+        var culture = new System.Globalization.CultureInfo("ru-RU")
+        {
+            DateTimeFormat =
+            {
+                ShortDatePattern = "dd.MM.yyyy"
+            },
+            NumberFormat =
+            {
+                NumberDecimalSeparator = "."
+            }
+        };
 
         System.Threading.Thread.CurrentThread.CurrentCulture = culture;
         System.Threading.Thread.CurrentThread.CurrentUICulture = culture;
-
+        
         base.OnFrameworkInitializationCompleted();
     }
 
