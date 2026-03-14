@@ -58,22 +58,24 @@ namespace SubApp.ViewModels.Pages
                 var query = db.Subscriptions.Include(s => s.Service).Where(s => s.UserId == userId);
 
                 var statusStr = SelectedStatus.ToString();
+                var today = DateTime.Today;
 
                 switch (statusStr)
                 {
                     case "Просроченные":
-                        query = query.Where(s => s.Status.Equals("active", StringComparison.CurrentCultureIgnoreCase) && s.NextPaymentDate < DateTime.Today);
+                        query = query.Where(s => s.Status.ToLower() == "active" && s.NextPaymentDate < today);
                         break;
                     case "Активные":
-                        query = query.Where(s => s.Status.Equals("active", StringComparison.CurrentCultureIgnoreCase) && s.NextPaymentDate >= DateTime.Today);
-                        break;
-                    case "Все":
+                        query = query.Where(s => s.Status.ToLower() == "active" && s.NextPaymentDate >= today);
                         break;
                     case "Приостановленные":
-                        query = query.Where(s => s.Status.Equals("paused", StringComparison.CurrentCultureIgnoreCase));
+                        query = query.Where(s => s.Status.ToLower() == "paused");
                         break;
                     case "Отмененные":
-                        query = query.Where(s => s.Status.Equals("cancelled", StringComparison.CurrentCultureIgnoreCase));
+                        query = query.Where(s => s.Status.ToLower() == "cancelled");
+                        break;
+                    case "Все":
+                    default:
                         break;
                 }
 

@@ -54,7 +54,8 @@
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
-                            CornerRadius="15"/>
+                            CornerRadius="15"
+                            Command="{Binding CancelSubscriptionCommand}"/>
                     
                     <Button Content="Отмена" 
                             Background="Transparent" 
@@ -62,7 +63,8 @@
                             Height="50"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"
-                            VerticalContentAlignment="Center"/>
+                            VerticalContentAlignment="Center"
+                            Command="{Binding CloseCommand}"/>
                 </StackPanel>
             </StackPanel>
         </Border>
