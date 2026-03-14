@@ -2,9 +2,9 @@ namespace SubApp.Models;
 
 public enum BillingCycle
 {
-    Monthly,
-    Quarterly,
-    Yearly,
-    Weekly,
-    Custom
+    monthly,
+    quarterly,
+    yearly,
+    weekly,
+    custom
 }

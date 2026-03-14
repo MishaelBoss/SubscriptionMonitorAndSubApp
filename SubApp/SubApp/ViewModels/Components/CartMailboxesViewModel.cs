@@ -224,6 +224,8 @@ public partial class CartMailboxesViewModel(Mailbox mail) : ViewModelBase
         {
             targetSub.NextPaymentDate = message.Date.DateTime.AddMonths(1);
             targetSub.LastChecked = DateTime.Now;
+            targetSub.MarkAsPaid(message.Date.DateTime); 
+            targetSub.UpdatedAt = DateTime.Now;
             await db.SaveChangesAsync();
             
             WeakReferenceMessenger.Default.Send(new RefreshSubscriptionMessage());
