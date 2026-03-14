@@ -64,6 +64,10 @@ public partial class AddOrEditNewSubscriptionUserControlViewModel : ViewModelBas
     [RelayCommand]
     public async Task Save()
     {
+        await AuthService.TryAutoLoginAsync();
+        
+        if(AuthService.CurrentSession?.Id == 0 || AuthService.CurrentSession == null) return;
+        
         Console.WriteLine($"Начало записи {SubscriptionName}");
         
         try
@@ -84,7 +88,7 @@ public partial class AddOrEditNewSubscriptionUserControlViewModel : ViewModelBas
                 NextPaymentDate = NextPaymentDate ?? DateTime.Now,
                 AutoRenew = AutomaticRenewal,
                 Notes = Notes,
-                UserId = (int)AuthService.CurrentSession!.Id,
+                UserId = (int)AuthService.CurrentSession.Id,
                 Uuid = Guid.NewGuid(),
                 LastChecked = DateTime.Now,
                 CreatedAt = DateTime.Now,

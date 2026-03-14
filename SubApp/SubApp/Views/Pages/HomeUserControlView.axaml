@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="clr-namespace:SubApp.Converters"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="vm:HomeUserControlViewModel"
              x:Class="SubApp.Views.Pages.HomeUserControlView">
@@ -11,6 +12,10 @@
         <StyleInclude Source="/Styles/ContentCardStyles.axaml"/>
         <StyleInclude Source="/Styles/ButtonsStyles.axaml"/>
 	</UserControl.Styles>
+    
+    <UserControl.Resources>
+        <converters:NumericToBoolConverter x:Key="NumericToBoolConverter"/>
+    </UserControl.Resources>
 
     <ScrollViewer>
         <StackPanel Margin="12" Spacing="15">
@@ -47,9 +52,51 @@
                     <TextBlock Text="Последние платежи" Classes="SectionHeader"/>
                     <Separator Background="#2C2C2E" Height="1"/>
                     
-                    <StackPanel HorizontalAlignment="Center" Margin="0,20" Spacing="10">
+                    <ItemsControl ItemsSource="{Binding RecentPayments}">
+                        <ItemsControl.ItemTemplate>
+                             <DataTemplate>
+                                 <Border Background="#F2F2F7" CornerRadius="10" Padding="12,8" Margin="0, 5">
+                                     <Grid ColumnDefinitions="70, *, Auto, Auto">
+                                         <Border Grid.Column="0" Background="#4A90E2" CornerRadius="15" Padding="8,4">
+                                             <TextBlock Text="{Binding ServiceName}" 
+                                                        Foreground="White" 
+                                                        FontSize="12" 
+                                                        FontWeight="Bold"
+                                                        MaxWidth="50"
+                                                        TextTrimming="CharacterEllipsis"/>
+                                         </Border>
+                                            
+                                         <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="20,0">
+                                             <TextBlock Text="{Binding Amount, StringFormat='{}{0:N2}'}" 
+                                                        FontWeight="Bold"/>
+                                             <TextBlock Text="{Binding Currency}" 
+                                                        Margin="5,0,0,0"/>
+                                         </StackPanel>
+                                            
+                                         <TextBlock Grid.Column="2" Text="{Binding ReceivedDate, StringFormat='dd.MM.yyyy'}" Foreground="#8E8E93" 
+                                                    VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                     </Grid>
+                                 </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    
+                    <StackPanel HorizontalAlignment="Center"
+                                Margin="0,20" 
+                                Spacing="10"
+                                IsVisible="{Binding RecentPayments.Count, Converter={StaticResource NumericToBoolConverter}}">
                         <TextBlock Text="Нет платежей" Foreground="#8E8E93" HorizontalAlignment="Center"/>
                     </StackPanel>
+                    
+                    <Button HorizontalAlignment="Center" 
+                            Margin="0,5" 
+                            Classes="TransparentButton" 
+                            Command="{Binding LoadMoreEmailsCommand}"
+                            IsVisible="{Binding HasMoreDataEmail}">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <TextBlock Text="Загрузаить еще"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </Border>
 
@@ -108,8 +155,8 @@
                     <Button HorizontalAlignment="Center" 
                             Margin="0,5" 
                             Classes="TransparentButton" 
-                            Command="{Binding LoadMoreCommand}"
-                            IsVisible="{Binding HasMoreData}">
+                            Command="{Binding LoadMoreSubscriptionsCommand}"
+                            IsVisible="{Binding HasMoreDataSubscription}">
                         <StackPanel Orientation="Horizontal" Spacing="5">
                             <TextBlock Text="Загрузаить еще"/>
                         </StackPanel>

@@ -44,6 +44,10 @@ namespace SubApp.ViewModels.Pages
 
         private async Task LoadEmailsAsync()
         {
+            await AuthService.TryAutoLoginAsync();
+            
+            if(AuthService.CurrentSession?.Id == 0) return;
+            
             try
             {
                 CartMailboxesViewModels.Clear();
@@ -51,7 +55,7 @@ namespace SubApp.ViewModels.Pages
                 await using var db = new AppDbContext();
                 
                 var mailboxes = await db.Mailboxes
-                    .Where(m => m.UserId == AuthService.CurrentSession!.Id)
+                    .Where(m => AuthService.CurrentSession != null && m.UserId == AuthService.CurrentSession.Id)
                     .ToListAsync();
                 
                 foreach (var mailbox in mailboxes)

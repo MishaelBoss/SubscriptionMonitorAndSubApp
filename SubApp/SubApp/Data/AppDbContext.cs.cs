@@ -1,9 +1,10 @@
-﻿using Avalonia.Controls;
-using Avalonia.Platform;
+﻿using Avalonia.Platform;
 using Microsoft.EntityFrameworkCore;
 using SubApp.Models;
 using System;
 using System.IO;
+using System.Linq;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace SubApp.Data;
 

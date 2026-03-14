@@ -13,6 +13,40 @@
     
     <ScrollViewer>
         <StackPanel Margin="12" Spacing="15">
+            
+            <Border Classes="ContentCard">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Статистика по подпискам" Classes="SectionHeader"/>
+                    <Separator Background="#2C2C2E" Height="1"/>
+                    
+                    <UniformGrid Columns="2" RowSpacing="8" ColumnSpacing="8">
+                        <Border Classes="StatCard">
+                            <StackPanel>
+                                <TextBlock Text="ВСЕГО ПОДПИСОК" Classes="CardHeader"/>
+                                <TextBlock Text="{Binding CountSubscription}" Classes="CardValue"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="StatCard">
+                            <StackPanel>
+                                <TextBlock Text="АКТИВНЫХ ПОДПИСОК" Classes="CardHeader"/>
+                                <TextBlock Text="{Binding CountActiveSubscription}" Classes="CardValue"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="StatCard">
+                            <StackPanel>
+                                <TextBlock Text="РАСХОДЫ В МЕСЯЦ" Classes="CardHeader"/>
+                                <TextBlock Text="{Binding TotalMonthlyCost, StringFormat='{}{0:N0} ₽'}" Classes="CardValue"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Classes="StatCard">
+                            <StackPanel>
+                                <TextBlock Text="РАСХОДЫ В ГОД" Classes="CardHeader" Foreground="#FF453A"/>
+                                <TextBlock Text="{Binding TotalYearlyCost, StringFormat='{}{0:N0} ₽'}" Classes="CardValue"/>
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
+                </StackPanel>
+            </Border>
 
             <Border Classes="ContentCard">
                 <StackPanel Spacing="10">
@@ -20,44 +54,7 @@
                     <Separator Background="#2C2C2E" Height="1"/>
                     
                     <StackPanel HorizontalAlignment="Center" Margin="0,20" Spacing="10">
-                        <PathIcon Data="{StaticResource BoxIcon}" Opacity="0.5"/>
                         <TextBlock Text="Нет пока данных" Foreground="#8E8E93" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-
-            <Border Classes="ContentCard">
-                <StackPanel Spacing="10">
-                    <TextBlock Text="Статистика по подпискам" Classes="SectionHeader"/>
-                    <Separator Background="#2C2C2E" Height="1"/>
-                    
-                    <StackPanel HorizontalAlignment="Center" Spacing="10">
-                        <UniformGrid Columns="2" RowSpacing="8" ColumnSpacing="8">
-                            <Border Classes="StatCard">
-                                <StackPanel>
-                                    <TextBlock Text="ВСЕГО ПОДПИСОК" Classes="CardHeader"/>
-                                    <TextBlock Text="2" Classes="CardValue"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Classes="StatCard">
-                                <StackPanel>
-                                    <TextBlock Text="АКТИВНЫХ ПОДПИСОК" Classes="CardHeader"/>
-                                    <TextBlock Text="2" Classes="CardValue"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Classes="StatCard">
-                                <StackPanel>
-                                    <TextBlock Text="РАСХОДЫ В МЕСЯЦ" Classes="CardHeader"/>
-                                    <TextBlock Text="42000 ₽" Classes="CardValue"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Classes="StatCard">
-                                <StackPanel>
-                                    <TextBlock Text="РАСХОДЫ В ГОД" Classes="CardHeader" Foreground="#FF453A"/>
-                                    <TextBlock Text="0" Classes="CardValue"/>
-                                </StackPanel>
-                            </Border>
-                        </UniformGrid>
                     </StackPanel>
                 </StackPanel>
             </Border>

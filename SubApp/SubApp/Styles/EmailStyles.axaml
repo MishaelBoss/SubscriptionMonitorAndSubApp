@@ -1,0 +1,14 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Style Selector="Border.Status">
+        <Setter Property="CornerRadius" Value="15"/>
+        <Setter Property="Padding" Value="10,4"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Border.Processed">
+        <Setter Property="Background" Value="#4CAF50"/>
+    </Style>
+    <Style Selector="Border.Waiting">
+        <Setter Property="Background" Value="#FFA000"/>
+    </Style>
+</Styles>

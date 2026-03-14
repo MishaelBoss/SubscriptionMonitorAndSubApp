@@ -31,11 +31,11 @@ public partial class ProfileUserControlViewModel : ViewModelBase
     {
         WeakReferenceMessenger.Default.Send(new OpenOrCloseProfileMessage());
     }
-
+    
     [RelayCommand]
     public void Logout()
     {
-        AuthService.Logout();
+        WeakReferenceMessenger.Default.Send(new OpenOrCloseConfirmLogoutMessage());
     }
 
     [RelayCommand]

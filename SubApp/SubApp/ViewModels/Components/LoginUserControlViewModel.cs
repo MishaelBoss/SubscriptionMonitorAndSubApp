@@ -42,6 +42,12 @@ public partial class LoginUserControlViewModel : ViewModelBase
     {
         WeakReferenceMessenger.Default.Send(new OpenOrCloseRegistrationMessage());
     }
+    
+    [RelayCommand]
+    public void Logout()
+    {
+        WeakReferenceMessenger.Default.Send(new OpenOrCloseConfirmLogoutMessage());
+    }
 
     private void ClearForm() 
     {

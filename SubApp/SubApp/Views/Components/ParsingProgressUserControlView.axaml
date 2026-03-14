@@ -1,0 +1,84 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:vm="using:SubApp.ViewModels.Components"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:DataType="vm:ParsingProgressUserControlViewModel"
+             x:Class="SubApp.Views.Components.ParsingProgressUserControlView">
+    
+    <Grid>
+        <Border Name="BackgroundDim" 
+                Background="Black" 
+                Opacity="0.5"
+                PointerPressed="OnCloseClicked"/>
+
+        <Border Name="Sheet" 
+                Background="#1E1E22" 
+                MaxHeight="450" 
+                Padding="30"
+                VerticalAlignment="Bottom" 
+                CornerRadius="30,30,0,0"
+                PointerPressed="OnPointerPressed"
+                PointerMoved="OnPointerMoved"
+                PointerReleased="OnPointerReleased">
+            
+            <Border.RenderTransform>
+                <TranslateTransform Y="0"/>
+            </Border.RenderTransform>
+            
+            <Border.Transitions>
+                <Transitions>
+                    <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.2"/>
+                </Transitions>
+            </Border.Transitions>
+            
+            <StackPanel Spacing="20" HorizontalAlignment="Center">
+                <Border Width="40" Height="4" Background="#333337" CornerRadius="2"/>
+                
+                <TextBlock Text="Парсинг почты" 
+                           FontSize="20" 
+                           FontWeight="SemiBold" 
+                           Foreground="White"
+                           HorizontalAlignment="Center"/>
+                
+                <TextBlock Text="{Binding StatusText}" 
+                           Foreground="#8E8E93" 
+                           HorizontalAlignment="Center"/>
+                
+                <StackPanel Spacing="5">
+                    <ProgressBar Value="{Binding ProgressValue}" 
+                                 Minimum="0" Maximum="100" 
+                                 Height="10" Background="#333337" Foreground="#0A84FF"
+                                 CornerRadius="5"/>
+                    <DockPanel>
+                        <TextBlock Text="{Binding ProcessedCount}" Foreground="#8E8E93" FontSize="12" DockPanel.Dock="Left"/>
+                        <TextBlock Text="{Binding TotalCount}" Foreground="#8E8E93" FontSize="12" DockPanel.Dock="Right" HorizontalAlignment="Right"/>
+                    </DockPanel>
+                </StackPanel>
+                
+                <Border Background="#161618" CornerRadius="15" Height="150" Padding="10">
+                    <ScrollViewer Name="LogScroll">
+                        <ItemsControl ItemsSource="{Binding Logs}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" Foreground="#636366" FontSize="12" Margin="0,2"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+                
+                <Button Content="Закрыть" 
+                        Background="Transparent" 
+                        Foreground="White"
+                        Height="50"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        IsEnabled="{Binding IsFinished}"
+                        Command="{Binding CloseCommand}"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

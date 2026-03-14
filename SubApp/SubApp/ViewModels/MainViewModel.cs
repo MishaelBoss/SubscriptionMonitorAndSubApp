@@ -18,7 +18,9 @@ public partial class MainViewModel : ViewModelBase,
     IRecipient<OpenOrCloseAddOrEditNewSubscriptionMessage>,
     IRecipient<OpenOrCloseSubscriptionDetailsMessage>,
     IRecipient<OpenOrCloseEditUserAndProfileMessage>,
-    IRecipient<OpenOrCloseConfirmDelete>
+    IRecipient<OpenOrCloseConfirmDelete>,
+    IRecipient<OpenOrCloseProgressModalMessage>,
+    IRecipient<OpenOrCloseConfirmLogoutMessage>
 {
     [ObservableProperty] private ViewModelBase? _currentPage;
     [ObservableProperty] private ViewModelBase? _overlayContent;
@@ -77,7 +79,6 @@ public partial class MainViewModel : ViewModelBase,
     
     public void Receive(OpenOrCloseAddOrEditEmailMessage message)
     {
-        // OverlayContent = OverlayContent is new AddOrEditMailboxUserControlViewModel(message.Mailbox) ? null : _addOrEditMailboxUserControlViewModel;
         OverlayContent = OverlayContent is  AddOrEditMailboxUserControlViewModel ? null : new AddOrEditMailboxUserControlViewModel(message.Mailbox);;
     }
     
@@ -99,6 +100,16 @@ public partial class MainViewModel : ViewModelBase,
     public void Receive(OpenOrCloseConfirmDelete message)
     {
         OverlayContent = OverlayContent is ConfirmDeleteUserControlViewModel ? null : new ConfirmDeleteUserControlViewModel(message.DeleteAction);;
+    }
+    
+    public void Receive(OpenOrCloseProgressModalMessage message)
+    {
+        OverlayContent = OverlayContent is ParsingProgressUserControlViewModel ? null : new ParsingProgressUserControlViewModel();;
+    }
+    
+    public void Receive(OpenOrCloseConfirmLogoutMessage message)
+    {
+        OverlayContent = OverlayContent is ConfirmLogoutUserControlViewModel ? null : new ConfirmLogoutUserControlViewModel();;
     }
 
     ~MainViewModel() 

@@ -8,14 +8,14 @@ using SubApp.Scripts;
 
 namespace SubApp.Views.Components;
 
-public partial class ConfirmDeleteUserControlView : UserControl
+public partial class ConfirmLogoutUserControlView : UserControl
 {
     private bool _isDragging;
     private Point _startPointerPosition;
 
     private TranslateTransform? GetTransform() => Sheet.RenderTransform as TranslateTransform;
     
-    public ConfirmDeleteUserControlView()
+    public ConfirmLogoutUserControlView()
     {
         InitializeComponent();
     }
@@ -61,7 +61,7 @@ public partial class ConfirmDeleteUserControlView : UserControl
 
     private static void Close()
     {
-        WeakReferenceMessenger.Default.Send(new OpenOrCloseConfirmDelete());
+        WeakReferenceMessenger.Default.Send(new OpenOrCloseConfirmLogoutMessage());
     }
 
     private void OnCloseClicked(object sender, PointerPressedEventArgs e) => Close();

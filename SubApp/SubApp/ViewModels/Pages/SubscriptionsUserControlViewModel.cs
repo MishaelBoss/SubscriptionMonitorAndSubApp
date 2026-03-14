@@ -38,11 +38,13 @@ namespace SubApp.ViewModels.Pages
         private async Task Filter()
         {
             await AuthService.TryAutoLoginAsync();
+            
+            if(AuthService.CurrentSession?.Id == 0) return;
 
-            using var db = new AppDbContext();
+            await using var db = new AppDbContext();
             var query = db.Subscriptions.Include(s => s.Service).AsQueryable();
 
-            if (SelectedStatus is SubscriptionStatus status) query = query.Where(s => s.Status == status.ToString()).Where(s => s.UserId == AuthService.CurrentSession!.Id);
+            if (SelectedStatus is SubscriptionStatus status) query = query.Where(s => s.Status == status.ToString()).Where(s => AuthService.CurrentSession != null && s.UserId == AuthService.CurrentSession.Id);
             
             Subscriptions = new ObservableCollection<Subscription>(query.ToList());
         }

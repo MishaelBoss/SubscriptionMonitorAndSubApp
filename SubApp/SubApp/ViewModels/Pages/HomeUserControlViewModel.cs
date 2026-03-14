@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.EntityFrameworkCore;
@@ -15,13 +16,18 @@ namespace SubApp.ViewModels.Pages;
 public partial class HomeUserControlViewModel : ViewModelBase
 {
     [ObservableProperty] private ObservableCollection<Subscription> _subscriptions = [];
+    [ObservableProperty] private ObservableCollection<ParsedEmail> _recentPayments = [];
+    
     private const int PageSize = 5;
-    [ObservableProperty] private bool _hasMoreData = true;
-    private static List<Subscription>? _cache = [];
+    [ObservableProperty] private bool _hasMoreDataSubscription = true;
+    [ObservableProperty] private bool _hasMoreDataEmail = true;
+    private static readonly List<Subscription>? CacheSubscription = [];
+    private static readonly List<ParsedEmail>? CacheEmail = [];
     [ObservableProperty] private int _countSubscription;
+    [ObservableProperty] private int _countEmail;
     [ObservableProperty] private double _totalMonthlyCost;
     [ObservableProperty] private double _totalYearlyCost;
-    [ObservableProperty] private string _nextPaymentSummary;
+    [ObservableProperty] private string? _nextPaymentSummary;
 
     [RelayCommand]
     public void OpenAddSubscription() 
@@ -31,32 +37,105 @@ public partial class HomeUserControlViewModel : ViewModelBase
 
     public HomeUserControlViewModel()
     {
-        _  = LoadSubscriptions();
+        RecentPayments.Clear();
+
+        Task.Run(async () => { await InitializationAsync(); });
     }
 
-    private async Task LoadSubscriptions() 
+    private async Task InitializationAsync()
     {
         await AuthService.TryAutoLoginAsync();
+        
+        if(AuthService.CurrentSession?.Id == 0) return;
+        
+        await using var db = new AppDbContext();
+        
+        await LoadRecent(db);
+        LoadSubscriptions(db);
+    }
 
+    private async Task LoadRecent(AppDbContext db)
+    {
+        var all = db.ParsedEmails
+            .Where(s => AuthService.CurrentSession != null && s.Mailbox.UserId == AuthService.CurrentSession.Id)
+            .ToList();
+        
+        CountEmail = all.Count;
+        
+        var recent = await db.ParsedEmails
+            .Where(e => AuthService.CurrentSession != null && e.Mailbox.UserId == AuthService.CurrentSession.Id)
+            .OrderByDescending(e => e.ReceivedDate)
+            .Take(PageSize)
+            .ToListAsync();
+        
+        if (CacheEmail != null && CacheEmail.Count != 0)
+        {
+            RecentPayments = new ObservableCollection<ParsedEmail>(CacheEmail);
+            HasMoreDataEmail = RecentPayments.Count < CountEmail;
+            return;
+        }
+        
+        foreach (var email in recent)
+        {
+            RecentPayments.Add(email);
+            CacheEmail?.Add(email);
+        }
+        
+        HasMoreDataEmail = RecentPayments.Count < CountEmail;
+    }
+    
+    [RelayCommand]
+    private void LoadMoreEmails()
+    {
+        var currentCount = RecentPayments.Count;
+        var totalCount = CountEmail;
+        
+        var remaining = totalCount - currentCount;
+        if (remaining <= 0) return;
+        
         using var db = new AppDbContext();
+        var toTake = (remaining <= PageSize - 1) ? remaining : PageSize;
 
-        var allActive = db.Subscriptions.Where(s => s.IsActive).Where(s => s.UserId == AuthService.CurrentSession!.Id).Include(s => s.Service).ToList();
+        var newItems = db.ParsedEmails
+            .Where(e => AuthService.CurrentSession != null && e.Mailbox.UserId == AuthService.CurrentSession.Id)
+            .OrderBy(s => s.ReceivedDate)
+            .Include(e => e.Mailbox)
+            .Skip(currentCount)
+            .Take(toTake)
+            .ToList();
+
+        foreach (var item in newItems)
+        {
+            RecentPayments.Add(item);
+            CacheEmail?.Add(item);
+        }
+        
+        HasMoreDataEmail = RecentPayments.Count < totalCount;
+    }
+
+    private void LoadSubscriptions(AppDbContext db) 
+    {
+        var allActive = db.Subscriptions
+            .Where(s => s.IsActive)
+            .Where(s => AuthService.CurrentSession != null && s.UserId == AuthService.CurrentSession.Id)
+            .Include(s => s.Service).ToList();
+        
         CountSubscription = allActive.Count;
         TotalMonthlyCost = allActive.Sum(CalculateIndividualMonthlyCost);
         TotalYearlyCost = allActive.Sum(CalculateIndividualYearlyCost);
         
-        // var nextSub = allActive
-        //     .Where(s => s.NextPaymentDate >= DateTime.Now)
-        //     .OrderBy(s => s.NextPaymentDate)
-        //     .FirstOrDefault();
+        var today = DateTime.Today;
+        var nextWeek = today.AddDays(7);
         
-        // NextPaymentSummary = nextSub != null 
-        //     ? $"({nextSub.Amount:N0} {})" : "0";
+        var upcomingPaymentsCount = allActive
+            .Count(s => s.NextPaymentDate >= today && s.NextPaymentDate <= nextWeek);
+        
+        NextPaymentSummary = upcomingPaymentsCount.ToString();
 
-        if (_cache != null && _cache.Count != 0)
+        if (CacheSubscription != null && CacheSubscription.Count != 0)
         {
-            Subscriptions = new ObservableCollection<Subscription>(_cache);
-            HasMoreData = Subscriptions.Count < CountSubscription;
+            Subscriptions = new ObservableCollection<Subscription>(CacheSubscription);
+            HasMoreDataSubscription = Subscriptions.Count < CountSubscription;
             return;
         }
 
@@ -64,14 +143,14 @@ public partial class HomeUserControlViewModel : ViewModelBase
         foreach (var sub in initialList)
         {
             Subscriptions.Add(sub);
-            _cache?.Add(sub);
+            CacheSubscription?.Add(sub);
         }
         
-        HasMoreData = Subscriptions.Count < CountSubscription;
+        HasMoreDataSubscription = Subscriptions.Count < CountSubscription;
     }
     
     [RelayCommand]
-    private void LoadMore()
+    private void LoadMoreSubscriptions()
     {
         var currentCount = Subscriptions.Count;
         var totalCount = CountSubscription;
@@ -93,10 +172,10 @@ public partial class HomeUserControlViewModel : ViewModelBase
         foreach (var item in newItems)
         {
             Subscriptions.Add(item);
-            _cache?.Add(item);
+            CacheSubscription?.Add(item);
         }
         
-        HasMoreData = Subscriptions.Count < totalCount;
+        HasMoreDataSubscription = Subscriptions.Count < totalCount;
     }
     
     private double CalculateIndividualMonthlyCost(Subscription sub)

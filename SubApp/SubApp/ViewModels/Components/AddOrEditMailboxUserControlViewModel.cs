@@ -94,8 +94,10 @@ public partial class AddOrEditMailboxUserControlViewModel : ViewModelBase
     public async Task SaveEmailAsync()
     {
         if (!IsActiveConfirmButton) return;
-
+        
         await AuthService.TryAutoLoginAsync();
+        
+        if(AuthService.CurrentSession?.Id == 0 || AuthService.CurrentSession == null) return;
         
         try
         {
@@ -105,7 +107,7 @@ public partial class AddOrEditMailboxUserControlViewModel : ViewModelBase
 
             if (Mailbox == null)
             {
-                var exists = await db.Mailboxes.AnyAsync(m => m.UserId == AuthService.CurrentSession!.Id && m.Email == Email);
+                var exists = await db.Mailboxes.AnyAsync(m => m.UserId == AuthService.CurrentSession.Id && m.Email == Email);
                 if (exists) {
                     ErrorEmail = $"Почта {Email} уже добавлена!";
                     return;
@@ -113,7 +115,7 @@ public partial class AddOrEditMailboxUserControlViewModel : ViewModelBase
                 
                 mailbox = new Mailbox
                 {
-                    UserId = AuthService.CurrentSession!.Id, CreatedAt = DateTime.UtcNow,
+                    UserId = AuthService.CurrentSession.Id, CreatedAt = DateTime.UtcNow,
                     SearchFolder = "INBOX",
                     SearchCriteria = "FROM \"noreply\" OR FROM \"billing\" OR SUBJECT \"subscription\" OR SUBJECT \"payment\""
                 };
