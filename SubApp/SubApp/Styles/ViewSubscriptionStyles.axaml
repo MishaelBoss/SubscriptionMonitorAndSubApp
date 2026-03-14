@@ -1,0 +1,75 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        
+        <Style Selector="Button.Danger">
+                <Setter Property="Background">
+                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                <GradientStop Offset="0" Color="#d63031"/>
+                                <GradientStop Offset="1" Color="#e84342"/>
+                        </LinearGradientBrush>
+                </Setter>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Height" Value="50"/>
+                <Setter Property="CornerRadius" Value="12"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style Selector="Button.Danger /template/ ContentPresenter">
+                <Setter Property="Transitions">
+                        <Transitions>
+                                <BrushTransition Property="Background" Duration="0:0:0.3"/>
+                        </Transitions>
+                </Setter>
+        </Style>
+        
+        <Style Selector="Button.Danger:pressed /template/ ContentPresenter">
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Background">
+                        <RadialGradientBrush Center="50%,50%" RadiusX="80%" RadiusY="80%">
+                                <GradientStop Offset="0" Color="#d63031"/>
+                                <GradientStop Offset="1" Color="#e84342"/>
+                        </RadialGradientBrush>
+                </Setter>
+        </Style>
+        
+        <Style Selector="Button.Warning">
+                <Setter Property="Background">
+                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                <GradientStop Offset="0" Color="#fdcb6e"/>
+                                <GradientStop Offset="1" Color="#f39c12"/>
+                        </LinearGradientBrush>
+                </Setter>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Height" Value="50"/>
+                <Setter Property="CornerRadius" Value="12"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+
+        <Style Selector="Button.Warning /template/ ContentPresenter">
+                <Setter Property="Transitions">
+                        <Transitions>
+                                <BrushTransition Property="Background" Duration="0:0:0.3"/>
+                        </Transitions>
+                </Setter>
+        </Style>
+        
+        <Style Selector="Button.Warning:pressed /template/ ContentPresenter">
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="Background">
+                        <RadialGradientBrush Center="50%,50%" RadiusX="80%" RadiusY="80%">
+                                <GradientStop Offset="0" Color="#fdcb6e"/>
+                                <GradientStop Offset="1" Color="#f39c12"/>
+                        </RadialGradientBrush>
+                </Setter>
+        </Style>
+    
+        <Style Selector="Button:disabled /template/ ContentPresenter">
+                <Setter Property="Background" Value="#3A3A3C" />
+                <Setter Property="Foreground" Value="#8E8E93" />
+                <Setter Property="Opacity" Value="0.6" /> 
+        </Style>
+</Styles>

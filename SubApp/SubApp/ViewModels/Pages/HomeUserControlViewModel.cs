@@ -33,7 +33,7 @@ public partial class HomeUserControlViewModel : ViewModelBase
     [RelayCommand]
     public void OpenAddSubscription() 
     {
-        WeakReferenceMessenger.Default.Send(new OpenOrCloseAddOrEditNewSubscriptionMessage());
+        WeakReferenceMessenger.Default.Send(new OpenOrCloseAddOrEditSubscriptionMessage());
     }
 
     public HomeUserControlViewModel()

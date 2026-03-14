@@ -171,7 +171,7 @@
                                TextAlignment="Center"/>
 
                     <Button Classes="PrimaryButton" 
-                            Content="Сохранить изменения" 
+                            Content="{Binding ConfirmButtonText}" 
                             HorizontalAlignment="Stretch" 
                             Command="{Binding SaveCommand}"
                             IsEnabled="{Binding IsActiveConfirmButton}"/>

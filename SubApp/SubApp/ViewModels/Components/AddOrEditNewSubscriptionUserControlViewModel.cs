@@ -14,7 +14,7 @@ namespace SubApp.ViewModels.Components;
 public partial class AddOrEditNewSubscriptionUserControlViewModel : ViewModelBase
 {
     [ObservableProperty] private List<Service> _services = [];
-    
+
     public List<BillingCycle> PaymentPeriods { get; } = [.. Enum.GetValues<BillingCycle>()];
     public List<Currency> Currencies { get; } = [.. Enum.GetValues<Currency>()];
     public List<SubscriptionStatus> Status { get; } = 
@@ -23,12 +23,8 @@ public partial class AddOrEditNewSubscriptionUserControlViewModel : ViewModelBas
         SubscriptionStatus.Paused, 
         SubscriptionStatus.Trial 
     ];
-    
-    // public List<string> Service { get; } = [ "Выберите сервис", "FizoVod" ];
-    // public List<string> PaymentPeriod { get; } = [ "Ежемесячно", "Ежеквартально", "Ежегодно", "Еженедельно", "Свой период" ];
-    // public List<string> Currency { get; } = [ "₽ Рубль", "$ Долор", "€ Евро" ];
-    // public List<string> CurrencyList { get; } = [ "RUB", "USD", "EUR" ];
-    // public List<string> Status { get; } = [ "Активна", "Приостановлена", "Пробный период" ];
+
+    private Subscription? Sub { get; }
 
     [ObservableProperty] private string _erroredSubscription = string.Empty;
     [ObservableProperty][NotifyPropertyChangedFor(nameof(IsActiveConfirmButton))] private Service? _selectedService;
@@ -42,6 +38,9 @@ public partial class AddOrEditNewSubscriptionUserControlViewModel : ViewModelBas
     [ObservableProperty] private int? _daysPeriod = 30;
     [ObservableProperty] private bool _automaticRenewal = true;
     [ObservableProperty] private string _notes = string.Empty;
+    
+    public string ConfirmButtonText
+        => Sub == null ? "Добавить" : "Сохранить";
 
     public bool IsActiveConfirmButton =>
         SelectedService != null &&
@@ -49,10 +48,26 @@ public partial class AddOrEditNewSubscriptionUserControlViewModel : ViewModelBas
         StartDate != null &&
         NextPaymentDate != null;
 
-    public AddOrEditNewSubscriptionUserControlViewModel()
+    public AddOrEditNewSubscriptionUserControlViewModel(Subscription? sub = null)
     {
-        ClearForm();
         LoadData();
+
+        if (sub != null)
+        {
+            Sub = sub;
+
+            SelectedService = Services.FirstOrDefault(s => s.Id == sub.ServiceId);
+            SubscriptionName = sub.Name;
+            if (Enum.TryParse<BillingCycle>(sub.BillingCycle, out var cycle)) SelectedPaymentPeriod = cycle;
+            Sum = sub.Amount;
+            if (Enum.TryParse<Currency>(sub.Currency, out var currency)) SelectedCurrency = currency;
+            if (Enum.TryParse<SubscriptionStatus>(sub.Status, out var status)) SelectedStatus = status;
+            StartDate = sub.StartDate;
+            NextPaymentDate = sub.NextPaymentDate;
+            DaysPeriod = sub.BillingCycleDays;
+            AutomaticRenewal = sub.AutoRenew;
+            Notes = sub.Notes ?? string.Empty;
+        }
     }
     
     private void LoadData()
@@ -72,47 +87,62 @@ public partial class AddOrEditNewSubscriptionUserControlViewModel : ViewModelBas
         
         try
         {
+            Subscription? subscription;
+
             if (SelectedService == null || Sum == null) return;
 
             await using var db = new AppDbContext();
-        
-            var newSub = new Subscription
-            {
-                ServiceId = SelectedService.Id,
-                Name = string.IsNullOrWhiteSpace(SubscriptionName) ? SelectedService.Name : SubscriptionName,
-                Amount = Sum ?? 0,
-                Currency = SelectedCurrency.ToString(), 
-                BillingCycle = SelectedPaymentPeriod.ToString(),
-                Status = SelectedStatus.ToString(),
-                StartDate = StartDate ?? DateTime.Now,
-                NextPaymentDate = NextPaymentDate ?? DateTime.Now,
-                AutoRenew = AutomaticRenewal,
-                Notes = Notes,
-                UserId = (int)AuthService.CurrentSession.Id,
-                Uuid = Guid.NewGuid(),
-                LastChecked = DateTime.Now,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now,
-                IsActive = true,
-                BillingCycleDays = DaysPeriod ?? 30
-            };
 
-            db.Subscriptions.Add(newSub);
+            if (Sub == null)
+            {
+                subscription = new Subscription
+                {
+                    Uuid = Guid.NewGuid(),
+                    CreatedAt = DateTime.Now,
+                    UserId = (int)AuthService.CurrentSession.Id,
+                    IsActive = true
+                };
+                
+                db.Subscriptions.Add(subscription);
+            }
+            else
+            {
+                subscription = await db.Subscriptions.FindAsync(Sub.Id);
+                if (subscription == null) return;
+            }
+            
+            subscription.ServiceId = SelectedService.Id;
+            subscription.Name = string.IsNullOrWhiteSpace(SubscriptionName) ? SelectedService.Name : SubscriptionName;
+            subscription.Amount = Sum ?? 0;
+            subscription.Currency = SelectedCurrency.ToString();
+            subscription.BillingCycle = SelectedPaymentPeriod.ToString();
+            subscription.Status = SelectedStatus.ToString();
+            subscription.StartDate = StartDate ?? DateTime.Now;
+            subscription.NextPaymentDate = NextPaymentDate ?? DateTime.Now;
+            subscription.AutoRenew = AutomaticRenewal;
+            subscription.Notes = Notes;
+            subscription.BillingCycleDays = DaysPeriod ?? 30;
+            subscription.UpdatedAt = DateTime.Now;
+            subscription.LastChecked = DateTime.Now;
+            
             await db.SaveChangesAsync();
         
             Close();
             ClearForm();
+
+            WeakReferenceMessenger.Default.Send(new RefreshSubscriptionMessage());
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex);
+            ErroredSubscription = "Ошибка при сохранении данных";
         }
     }
     
     [RelayCommand]
     public void Close() 
     {
-        WeakReferenceMessenger.Default.Send(new OpenOrCloseAddOrEditNewSubscriptionMessage());
+        WeakReferenceMessenger.Default.Send(new OpenOrCloseAddOrEditSubscriptionMessage());
     }
 
     private void ClearForm() 

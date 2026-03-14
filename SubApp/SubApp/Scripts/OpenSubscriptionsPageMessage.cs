@@ -1,5 +1,3 @@
 ﻿namespace SubApp.Scripts;
 
-public record OpenSubscriptionsPageMessage
-{
-}
+public record OpenSubscriptionsPageMessage;

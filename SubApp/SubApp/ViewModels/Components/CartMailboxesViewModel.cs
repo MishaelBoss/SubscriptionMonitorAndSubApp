@@ -191,72 +191,87 @@ public partial class CartMailboxesViewModel(Mailbox mail) : ViewModelBase
 
         return (false, "", 0, Currency.RUB);
     }
-
+    
     private async Task SaveSubscriptionToDb((bool IsSubscription, string ServiceName, decimal Amount, Currency Currency) result, MimeMessage message, string messageId)
     {
         await using var db = new AppDbContext();
 
-        var emailExists = await db.ParsedEmails.AnyAsync(e => e.MessageId == messageId);
-        
-        if (!emailExists)
+        if (await db.ParsedEmails.AnyAsync(e => e.MessageId == messageId)) return;
+
+        var targetSub = await db.Subscriptions
+            .Include(s => s.Service)
+            .FirstOrDefaultAsync(s => s.Service.Name == result.ServiceName 
+                                   && s.UserId == mail.UserId 
+                                   && s.Amount == result.Amount);
+
+        var parsedEmail = new ParsedEmail
         {
-            var parsedEmail = new ParsedEmail
-            {
-                MailboxId = mail.Id,
-                MessageId = messageId,
-                Subject = message.Subject ?? "Без темы",
-                FromEmail = message.From.ToString(),
-                ReceivedDate = message.Date.DateTime,
-                ServiceName = result.ServiceName,
-                Amount = result.Amount,
-                RawContent = message.TextBody?[..Math.Min(message.TextBody.Length, 1000)] ?? "",
-                IsProcessed = true,
-                ErrorMessage = ""
-            };
-            db.ParsedEmails.Add(parsedEmail);
+            MailboxId = mail.Id,
+            MessageId = messageId,
+            Subject = message.Subject ?? "Без темы",
+            FromEmail = message.From.ToString(),
+            ReceivedDate = message.Date.DateTime,
+            ServiceName = result.ServiceName,
+            Amount = result.Amount,
+            ProcessedSubscriptionId = targetSub?.Id,
+            RawContent = message.TextBody?[..Math.Min(message.TextBody.Length, 1000)] ?? "",
+            IsProcessed = true,
+            ErrorMessage = ""
+        };
+        db.ParsedEmails.Add(parsedEmail);
+
+        if (targetSub != null)
+        {
+            targetSub.NextPaymentDate = message.Date.DateTime.AddMonths(1);
+            targetSub.LastChecked = DateTime.Now;
             await db.SaveChangesAsync();
+            
+            WeakReferenceMessenger.Default.Send(new RefreshSubscriptionMessage());
+            return;
         }
 
-        if (!result.IsSubscription) return;
+        if (!result.IsSubscription) 
+        {
+            await db.SaveChangesAsync();
+            return;
+        }
 
         var service = await db.Services.FirstOrDefaultAsync(s => s.Name == result.ServiceName);
         if (service == null)
         {
-            service = new Service
-            {
+            service = new Service { 
                 Name = result.ServiceName, 
-                IsActive = true,
-                Website = "",
-                CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                IsActive = true, 
+                Website = "", 
+                CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") 
             };
             db.Services.Add(service);
             await db.SaveChangesAsync();
         }
 
-        var subExists = await db.Subscriptions.AnyAsync(s => s.Name == result.ServiceName && s.UserId == mail.UserId);
-        if (!subExists)
+        var newSub = new Subscription
         {
-            var newSub = new Subscription
-            {
-                Uuid = Guid.NewGuid(),
-                Name = result.ServiceName,
-                Amount = result.Amount,
-                UserId = (int)mail.UserId,
-                ServiceId = service.Id,
-                Currency = result.Currency.ToString(),
-                BillingCycle = "monthly",
-                Status = "active",
-                StartDate = DateTime.Now,
-                NextPaymentDate = DateTime.Now.AddMonths(1),
-                Notes = "",
-                AutoRenew = true,
-                IsActive = true,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now,
-                LastChecked = DateTime.Now
-            };
-            db.Subscriptions.Add(newSub);
-            await db.SaveChangesAsync();
-        }
+            Uuid = Guid.NewGuid(),
+            Name = result.ServiceName,
+            Amount = result.Amount,
+            UserId = (int)mail.UserId,
+            ServiceId = service.Id,
+            Currency = result.Currency.ToString(),
+            BillingCycle = "monthly",
+            Status = "active",
+            StartDate = message.Date.DateTime, // Дата из письма
+            NextPaymentDate = message.Date.DateTime.AddMonths(1),
+            Notes = "Добавлено автоматически из почты",
+            AutoRenew = true,
+            IsActive = true,
+            CreatedAt = DateTime.Now,
+            UpdatedAt = DateTime.Now,
+            LastChecked = DateTime.Now
+        };
+
+        db.Subscriptions.Add(newSub);
+        await db.SaveChangesAsync();
+        
+        WeakReferenceMessenger.Default.Send(new RefreshSubscriptionMessage());
     }
 }

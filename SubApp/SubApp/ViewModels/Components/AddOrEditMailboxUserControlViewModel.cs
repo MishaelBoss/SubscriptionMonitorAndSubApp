@@ -107,7 +107,9 @@ public partial class AddOrEditMailboxUserControlViewModel : ViewModelBase
 
             if (Mailbox == null)
             {
-                var exists = await db.Mailboxes.AnyAsync(m => m.UserId == AuthService.CurrentSession.Id && m.Email == Email);
+                var exists = await db.Mailboxes
+                    .AnyAsync(m => m.UserId == AuthService.CurrentSession.Id && m.Email == Email);
+                
                 if (exists) {
                     ErrorEmail = $"Почта {Email} уже добавлена!";
                     return;

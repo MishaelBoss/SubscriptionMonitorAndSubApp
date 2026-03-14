@@ -8,6 +8,5 @@ public partial class AddOrEditNewSubscriptionUserControlView : UserControl
     public AddOrEditNewSubscriptionUserControlView()
     {
         InitializeComponent();
-        DataContext = new AddOrEditNewSubscriptionUserControlViewModel();
     }
 }

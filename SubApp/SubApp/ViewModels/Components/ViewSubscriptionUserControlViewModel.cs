@@ -19,6 +19,7 @@ public partial class ViewSubscriptionUserControlViewModel : ViewModelBase
     public ViewSubscriptionUserControlViewModel(Subscription sub)
     {
         Sub = sub;
+        
         _ = LoadPaymentHistory(sub);
     }
 
@@ -27,7 +28,7 @@ public partial class ViewSubscriptionUserControlViewModel : ViewModelBase
         await using var db = new AppDbContext();
     
         var history = await db.ParsedEmails
-            .Where(e => e.ServiceName == sub.Name && e.Mailbox.UserId == sub.UserId)
+            .Where(e => e.ServiceName == sub.Name && e.Mailbox.UserId == sub.UserId && e.ProcessedSubscriptionId == Sub.Id)
             .OrderByDescending(e => e.ReceivedDate)
             .ToListAsync();
 
@@ -41,5 +42,17 @@ public partial class ViewSubscriptionUserControlViewModel : ViewModelBase
     public void Close()
     {
         WeakReferenceMessenger.Default.Send(new OpenOrCloseSubscriptionDetailsMessage());
+    }
+
+    [RelayCommand]
+    public void Edit()
+    {
+        WeakReferenceMessenger.Default.Send(new OpenOrCloseAddOrEditSubscriptionMessage(Sub));
+    }
+
+    [RelayCommand]
+    public void ChangeStatus()
+    {
+        WeakReferenceMessenger.Default.Send(new OpenOrCloseConfirmationSubscriptionCancellationMessage(Sub));
     }
 }

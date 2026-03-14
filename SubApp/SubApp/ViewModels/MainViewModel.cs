@@ -15,15 +15,17 @@ public partial class MainViewModel : ViewModelBase,
     IRecipient<OpenOrCloseLoginMessage>,
     IRecipient<OpenOrCloseRegistrationMessage>,
     IRecipient<OpenOrCloseAddOrEditEmailMessage>,
-    IRecipient<OpenOrCloseAddOrEditNewSubscriptionMessage>,
+    IRecipient<OpenOrCloseAddOrEditSubscriptionMessage>,
     IRecipient<OpenOrCloseSubscriptionDetailsMessage>,
     IRecipient<OpenOrCloseEditUserAndProfileMessage>,
     IRecipient<OpenOrCloseConfirmDelete>,
     IRecipient<OpenOrCloseProgressModalMessage>,
-    IRecipient<OpenOrCloseConfirmLogoutMessage>
+    IRecipient<OpenOrCloseConfirmLogoutMessage>,
+    IRecipient<OpenOrCloseConfirmationSubscriptionCancellationMessage>
 {
     [ObservableProperty] private ViewModelBase? _currentPage;
     [ObservableProperty] private ViewModelBase? _overlayContent;
+    [ObservableProperty] private ViewModelBase? _modalContent;
 
     private readonly HomeUserControlViewModel _homeUserControlView = new();
     private readonly SubscriptionsUserControlViewModel _subscriptionsUserControlViewModel = new();
@@ -33,7 +35,6 @@ public partial class MainViewModel : ViewModelBase,
     private readonly ProfileUserControlViewModel _profileUserControlViewModel = new();
     private readonly LoginUserControlViewModel _loginUserControlViewModel = new();
     private readonly RegistrationUserControlViewModel _registrationUserControlViewModel = new();
-    private readonly AddOrEditNewSubscriptionUserControlViewModel _addOrEditNewSubscriptionUserControlView = new();
 
     public MainViewModel() 
     {
@@ -82,9 +83,9 @@ public partial class MainViewModel : ViewModelBase,
         OverlayContent = OverlayContent is  AddOrEditMailboxUserControlViewModel ? null : new AddOrEditMailboxUserControlViewModel(message.Mailbox);;
     }
     
-    public void Receive(OpenOrCloseAddOrEditNewSubscriptionMessage message)
+    public void Receive(OpenOrCloseAddOrEditSubscriptionMessage message)
     {
-        OverlayContent = OverlayContent is AddOrEditNewSubscriptionUserControlViewModel ? null : _addOrEditNewSubscriptionUserControlView;
+        OverlayContent = OverlayContent is AddOrEditNewSubscriptionUserControlViewModel ? null : new AddOrEditNewSubscriptionUserControlViewModel(message.Sub);
     }
     
     public void Receive(OpenOrCloseSubscriptionDetailsMessage message)
@@ -99,17 +100,22 @@ public partial class MainViewModel : ViewModelBase,
     
     public void Receive(OpenOrCloseConfirmDelete message)
     {
-        OverlayContent = OverlayContent is ConfirmDeleteUserControlViewModel ? null : new ConfirmDeleteUserControlViewModel(message.DeleteAction);;
+        ModalContent = ModalContent is ConfirmDeleteUserControlViewModel ? null : new ConfirmDeleteUserControlViewModel(message.DeleteAction);;
     }
     
     public void Receive(OpenOrCloseProgressModalMessage message)
     {
-        OverlayContent = OverlayContent is ParsingProgressUserControlViewModel ? null : new ParsingProgressUserControlViewModel();;
+        ModalContent = ModalContent is ParsingProgressUserControlViewModel ? null : new ParsingProgressUserControlViewModel();;
     }
     
     public void Receive(OpenOrCloseConfirmLogoutMessage message)
     {
-        OverlayContent = OverlayContent is ConfirmLogoutUserControlViewModel ? null : new ConfirmLogoutUserControlViewModel();;
+        ModalContent = ModalContent is ConfirmLogoutUserControlViewModel ? null : new ConfirmLogoutUserControlViewModel();;
+    }
+    
+    public void Receive(OpenOrCloseConfirmationSubscriptionCancellationMessage message)
+    {
+        ModalContent = message.Sub != null ? new ConfirmationSubscriptionCancellationUserControlViewModel(message.Sub) : null;
     }
 
     ~MainViewModel() 

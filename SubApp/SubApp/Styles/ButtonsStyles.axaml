@@ -20,7 +20,7 @@
                 <Setter Property="Foreground" Value="White"/>
         
                 <Setter Property="Background">
-                        <RadialGradientBrush Center="50%,50%" Radius="0.8">
+                        <RadialGradientBrush Center="50%,50%" RadiusX="80%" RadiusY="80%">
                                 <GradientStop Offset="0" Color="#8C8AFF"/>
                                 <GradientStop Offset="1" Color="#5856D6"/>
                         </RadialGradientBrush>

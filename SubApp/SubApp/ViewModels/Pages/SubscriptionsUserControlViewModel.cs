@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
@@ -13,14 +14,23 @@ using SubApp.Scripts;
 
 namespace SubApp.ViewModels.Pages
 {
-    public partial class SubscriptionsUserControlViewModel : ViewModelBase
+    public partial class SubscriptionsUserControlViewModel : ViewModelBase, IRecipient<RefreshSubscriptionMessage>
     {
         [ObservableProperty] private ObservableCollection<Subscription> _subscriptions = [];
-        public List<object> Status { get; } = ["Все", .. Enum.GetValues<SubscriptionStatus>().Cast<object>()];
+        // public List<object> Status { get; } = ["Все", .. Enum.GetValues<SubscriptionStatus>().Cast<object>()];
+        public List<string> Status { get; } = [ "Все", "Активные", "Просроченные", "Приостановленные", "Отмененные" ];
+
         
         [ObservableProperty] private object _selectedStatus = "Все";
 
         public SubscriptionsUserControlViewModel()
+        {
+            WeakReferenceMessenger.Default.Register(this);
+            
+            _ = Filter();
+        }
+        
+        public void Receive(RefreshSubscriptionMessage message)
         {
             _ = Filter();
         }
@@ -38,15 +48,46 @@ namespace SubApp.ViewModels.Pages
         private async Task Filter()
         {
             await AuthService.TryAutoLoginAsync();
-            
-            if(AuthService.CurrentSession?.Id == 0) return;
+            var userId = AuthService.CurrentSession?.Id;
+    
+            if (userId is null or 0) return;
 
-            await using var db = new AppDbContext();
-            var query = db.Subscriptions.Include(s => s.Service).AsQueryable();
+            await Task.Run(async () => 
+            {
+                await using var db = new AppDbContext();
+                var query = db.Subscriptions.Include(s => s.Service).Where(s => s.UserId == userId);
 
-            if (SelectedStatus is SubscriptionStatus status) query = query.Where(s => s.Status == status.ToString()).Where(s => AuthService.CurrentSession != null && s.UserId == AuthService.CurrentSession.Id);
-            
-            Subscriptions = new ObservableCollection<Subscription>(query.ToList());
+                var statusStr = SelectedStatus.ToString();
+
+                switch (statusStr)
+                {
+                    case "Просроченные":
+                        query = query.Where(s => s.Status.Equals("active", StringComparison.CurrentCultureIgnoreCase) && s.NextPaymentDate < DateTime.Today);
+                        break;
+                    case "Активные":
+                        query = query.Where(s => s.Status.Equals("active", StringComparison.CurrentCultureIgnoreCase) && s.NextPaymentDate >= DateTime.Today);
+                        break;
+                    case "Все":
+                        break;
+                    case "Приостановленные":
+                        query = query.Where(s => s.Status.Equals("paused", StringComparison.CurrentCultureIgnoreCase));
+                        break;
+                    case "Отмененные":
+                        query = query.Where(s => s.Status.Equals("cancelled", StringComparison.CurrentCultureIgnoreCase));
+                        break;
+                }
+
+                var list = await query.ToListAsync();
+        
+                Dispatcher.UIThread.Post(() => {
+                    Subscriptions = new ObservableCollection<Subscription>(list);
+                });
+            });
+        }
+        
+        ~SubscriptionsUserControlViewModel()
+        {
+            WeakReferenceMessenger.Default.Unregister<RefreshSubscriptionMessage>(this);
         }
     }
 }

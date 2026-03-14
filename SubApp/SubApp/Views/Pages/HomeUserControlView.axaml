@@ -7,11 +7,11 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="vm:HomeUserControlViewModel"
              x:Class="SubApp.Views.Pages.HomeUserControlView">
-
+    
     <UserControl.Styles>
         <StyleInclude Source="/Styles/ContentCardStyles.axaml"/>
         <StyleInclude Source="/Styles/ButtonsStyles.axaml"/>
-	</UserControl.Styles>
+    </UserControl.Styles>
     
     <UserControl.Resources>
         <converters:NumericToBoolConverter x:Key="NumericToBoolConverter"/>
