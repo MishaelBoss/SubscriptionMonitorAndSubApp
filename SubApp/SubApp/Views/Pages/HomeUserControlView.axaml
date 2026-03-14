@@ -19,7 +19,6 @@
 
     <ScrollViewer>
         <StackPanel Margin="12" Spacing="15">
-            
             <UniformGrid Columns="2" RowSpacing="8" ColumnSpacing="8">
                 <Border Classes="StatCard">
                     <StackPanel>

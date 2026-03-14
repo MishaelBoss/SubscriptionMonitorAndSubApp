@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="clr-namespace:SubApp.Converters"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="vm:ViewSubscriptionUserControlViewModel"
              x:Class="SubApp.Views.Components.ViewSubscriptionUserControlView">
@@ -11,7 +12,14 @@
         <StyleInclude Source="/Styles/ContentCardStyles.axaml"/>
     </UserControl.Styles>
     
-    <Border Padding="15" Background="#0a0c0f">
+    <UserControl.Resources>
+        <converters:EnumToRussianConverter x:Key="EnumToRussianConverter"/>
+        <converters:StringOrFalseConverter x:Key="StringOrFalseConverter"/>
+        <converters:NumericToBoolConverter x:Key="NumericToBoolConverter"/>
+    </UserControl.Resources>
+    
+    <Border Padding="15"
+            Background="#0a0c0f">
         <Grid RowDefinitions="Auto,*">
             <Grid Grid.Row="0">
                 <Button Background="Transparent" 
@@ -24,20 +32,121 @@
                 </Button>
             </Grid>
 
-            <Grid Grid.Row="1">
-                <ScrollViewer>
+            <ScrollViewer Grid.Row="1">
+                <StackPanel Spacing="15">
+                    <Border Classes="ContentCard">
+                        <StackPanel Spacing="10">
+                            <TextBlock Text="{Binding Sub.Service.Name}" Classes="SectionHeader"/>
+                            <Separator Background="#2C2C2E" Height="1"/>
+                                               
+                            <StackPanel Spacing="15">
+                                <StackPanel>
+                                    <TextBlock Text="Статус" FontSize="12" Foreground="Gray" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{Binding Sub.Status, Converter={StaticResource EnumToRussianConverter}}" 
+                                               FontSize="15"
+                                               Foreground="#616161"/>
+                                </StackPanel>
+                
+                                <Separator Background="#2D2D2D" Height="1"/>
+                                
+                                <StackPanel>
+                                    <TextBlock Text="Сумма" FontSize="12" Foreground="Gray" Margin="0,0,0,4"/>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Sub.Amount}" 
+                                                   FontSize="15"
+                                                   Foreground="#616161"/>
+                                        
+                                        <TextBlock Text="{Binding Sub.Currency, Converter={StaticResource EnumToRussianConverter}}" 
+                                                   FontSize="15"
+                                                   Foreground="#616161"/>
+                                    </StackPanel>
+                                </StackPanel>
+                
+                                <Separator Background="#2D2D2D" Height="1"/>
+                                
+                                <StackPanel>
+                                    <TextBlock Text="Период" FontSize="12" Foreground="Gray" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{Binding Sub.BillingCycle, Converter={StaticResource EnumToRussianConverter}}" 
+                                               FontSize="15"
+                                               Foreground="#616161"/>
+                                </StackPanel>
+                                
+                                <Separator Background="#2D2D2D" Height="1"/>
+                                
+                                <StackPanel>
+                                    <TextBlock Text="Дата начала" FontSize="12" Foreground="Gray" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{Binding Sub.StartDate, StringFormat='{}{0:dd.MM.yyyy}'}" 
+                                               FontSize="15"
+                                               Foreground="#616161"/>
+                                </StackPanel>
+                                
+                                <Separator Background="#2D2D2D" Height="1"/>
+                                
+                                <StackPanel>
+                                    <TextBlock Text="Следующий платеж" FontSize="12" Foreground="Gray" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{Binding Sub.NextPaymentDate, StringFormat='{}{0:dd.MM.yyyy}'}" 
+                                               FontSize="15"
+                                               Foreground="#616161"/>
+                                </StackPanel>
+                                
+                                <Grid IsVisible="{Binding Sub.Notes, Converter={StaticResource StringOrFalseConverter}}">
+                                    <Separator Background="#2D2D2D" Height="1"/>
+                                
+                                    <StackPanel>
+                                        <TextBlock Text="Заметки" FontSize="12" Foreground="Gray" Margin="0,0,0,4"/>
+                                        <TextBlock Text="{Binding Sub.Notes}" 
+                                                   FontSize="15"
+                                                   Foreground="#616161"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                    
                     <Border Classes="ContentCard">
                         <StackPanel Spacing="10">
                             <TextBlock Text="История платежей" Classes="SectionHeader"/>
                             <Separator Background="#2C2C2E" Height="1"/>
-                    
-                            <StackPanel HorizontalAlignment="Center" Margin="0,20" Spacing="10">
+                            
+                            <ItemsControl ItemsSource="{Binding PaymentHistory}">
+                                <ItemsControl.ItemTemplate>
+                                     <DataTemplate>
+                                         <Border Background="#F2F2F7" CornerRadius="10" Padding="12,8" Margin="0, 5">
+                                             <Grid ColumnDefinitions="70, *, Auto, Auto">
+                                                 <Border Grid.Column="0" Background="#4A90E2" CornerRadius="15" Padding="8,4">
+                                                     <TextBlock Text="{Binding ServiceName}" 
+                                                                Foreground="White" 
+                                                                FontSize="12" 
+                                                                FontWeight="Bold"
+                                                                MaxWidth="50"
+                                                                TextTrimming="CharacterEllipsis"/>
+                                                 </Border>
+                                                    
+                                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="20,0">
+                                                     <TextBlock Text="{Binding Amount, StringFormat='{}{0:N2}'}" 
+                                                                FontWeight="Bold"/>
+                                                     <TextBlock Text="{Binding Currency}" 
+                                                                Margin="5,0,0,0"/>
+                                                 </StackPanel>
+                                                    
+                                                 <TextBlock Grid.Column="2" Text="{Binding ReceivedDate, StringFormat='dd.MM.yyyy'}" Foreground="#8E8E93" 
+                                                            VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                             </Grid>
+                                         </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            
+                            <StackPanel HorizontalAlignment="Center" 
+                                        Margin="0,20" 
+                                        Spacing="10"
+                                        IsVisible="{Binding PaymentHistory.Count, Converter={StaticResource NumericToBoolConverter}}">
                                 <TextBlock Text="Пока нет" Foreground="#8E8E93" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
-                </ScrollViewer>
-            </Grid>
+                </StackPanel>
+            </ScrollViewer>
         </Grid>
     </Border>
 </UserControl>

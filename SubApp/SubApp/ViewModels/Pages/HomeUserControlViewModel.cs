@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 
 namespace SubApp.ViewModels.Pages;
 
@@ -120,9 +121,16 @@ public partial class HomeUserControlViewModel : ViewModelBase
             .Where(s => AuthService.CurrentSession != null && s.UserId == AuthService.CurrentSession.Id)
             .Include(s => s.Service).ToList();
         
-        CountSubscription = allActive.Count;
-        TotalMonthlyCost = allActive.Sum(CalculateIndividualMonthlyCost);
-        TotalYearlyCost = allActive.Sum(CalculateIndividualYearlyCost);
+        var count = allActive.Count;
+        var monthly = allActive.Sum(CalculateIndividualMonthlyCost);
+        var yearly = allActive.Sum(CalculateIndividualYearlyCost);
+        
+        Dispatcher.UIThread.Post(() => 
+        {
+            CountSubscription = count;
+            TotalMonthlyCost = monthly;
+            TotalYearlyCost = yearly;
+        });
         
         var today = DateTime.Today;
         var nextWeek = today.AddDays(7);
