@@ -110,7 +110,7 @@
                                 <Border Background="#F2F2F7" CornerRadius="10" Padding="12,8" Margin="0, 5">
                                     <Grid ColumnDefinitions="70, *, Auto, Auto">
                                         <Border Grid.Column="0" Background="#4A90E2" CornerRadius="15" Padding="8,4">
-                                            <TextBlock Text="{Binding Service.Name}" 
+                                            <TextBlock Text="{Binding ServiceName}" 
                                                        Foreground="White" 
                                                        FontSize="12" 
                                                        FontWeight="Bold"

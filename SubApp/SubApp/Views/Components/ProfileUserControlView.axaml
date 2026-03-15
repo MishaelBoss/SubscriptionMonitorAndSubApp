@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:SubApp.ViewModels.Components"
+             xmlns:converters="clr-namespace:SubApp.Converters"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:DataType="vm:ProfileUserControlViewModel"
              x:Class="SubApp.Views.Components.ProfileUserControlView">
@@ -14,6 +15,10 @@
         <StyleInclude Source="/Styles/TabItemStyles.axaml"/>
         <StyleInclude Source="/Styles/ButtonsStyles.axaml"/>
 	</UserControl.Styles>
+    
+    <UserControl.Resources>
+        <converters:StringOrFalseConverter x:Key="StringOrFalseConverter"/>
+    </UserControl.Resources>
 
     <Border Background="#0a0c0f">
         <Grid RowDefinitions="Auto,*">
@@ -90,14 +95,16 @@
                                                            Foreground="#616161"/>
                                             </StackPanel>
                     
-                                            <Separator Background="#2D2D2D" Height="1"/>
+                                            <StackPanel Spacing="15" IsVisible="{Binding Phone, Converter={StaticResource StringOrFalseConverter}}">
+                                                <Separator Background="#2D2D2D" Height="1"/>
                     
-                                            <StackPanel>
-                                                <TextBlock Text="Телефон" FontSize="12" Foreground="Gray" Margin="0,0,0,4"/>
-                                                <TextBlock Text="{Binding Phone}" 
-                                                           FontSize="15" 
-                                                           FontStyle="Italic" 
-                                                           Foreground="#616161"/>
+                                                <StackPanel>
+                                                    <TextBlock Text="Телефон" FontSize="12" Foreground="Gray" Margin="0,0,0,4"/>
+                                                    <TextBlock Text="{Binding Phone}" 
+                                                               FontSize="15" 
+                                                               FontStyle="Italic" 
+                                                               Foreground="#616161"/>
+                                                </StackPanel>
                                             </StackPanel>
                     
                                             <Separator Background="#2D2D2D" Height="1"/>

@@ -2,10 +2,11 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.EntityFrameworkCore;
 using SubApp.Data;
 using SubApp.Models;
+using SubApp.Scripts;
 
 namespace SubApp.ViewModels.Components;
 
@@ -20,20 +21,28 @@ public partial class MyEmailMessagesUserControlViewModel : ViewModelBase
     
     private async Task LoadData()
     {
+        var session = AuthService.CurrentSession;
+        if (session == null) return;
+        
         try
         {
-            await using var db = new AppDbContext();
+            var api = new ApiService(session.Token);
+            var allEmails = await api.GetParsedEmailsAsync();
             
-            var data = await db.ParsedEmails
+            var data = allEmails
                 .OrderByDescending(e => e.ReceivedDate)
                 .Take(50)
-                .ToListAsync();
+                .ToList();
 
-            Emails.Clear();
-            foreach (var item in data)
+            Dispatcher.UIThread.Post(() =>
             {
-                Emails.Add(item);
-            }
+                Emails.Clear();
+                
+                foreach (var item in data)
+                {
+                    Emails.Add(item);
+                }
+            });
         }
         catch (Exception ex)
         {

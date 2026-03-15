@@ -10,21 +10,21 @@ public class EnumToRussianConverter : IValueConverter
     {
         return value switch
         {
-            "Monthly" or Models.BillingCycle.monthly => "Ежемесячно",
-            "Quarterly" or Models.BillingCycle.quarterly => "Ежеквартально",
-            "Yearly" or Models.BillingCycle.yearly => "Ежегодно",
-            "Weekly" or Models.BillingCycle.weekly => "Еженедельно",
-            "Custom" or Models.BillingCycle.custom => "Свой период",
+            "monthly" or Models.BillingCycle.monthly => "Ежемесячно",
+            "quarterly" or Models.BillingCycle.quarterly => "Ежеквартально",
+            "yearly" or Models.BillingCycle.yearly => "Ежегодно",
+            "weekly" or Models.BillingCycle.weekly => "Еженедельно",
+            "custom" or Models.BillingCycle.custom => "Свой период",
 
             "RUB" or Models.Currency.RUB => "₽ Рубль",
             "USD" or Models.Currency.USD => "$ Доллар",
             "EUR" or Models.Currency.EUR => "€ Евро",
             
-            "Active" or Models.SubscriptionStatus.active => "Активный",
-            "Paused" or Models.SubscriptionStatus.paused => "Остановленный",
-            "Cancelled" or Models.SubscriptionStatus.cancelled => "Отмененный",
-            "Expired" or Models.SubscriptionStatus.expired => "Истекший",
-            "Trial" or Models.SubscriptionStatus.trial => "Пробный период",
+            "active" or Models.SubscriptionStatus.active => "Активный",
+            "paused" or Models.SubscriptionStatus.paused => "Остановленный",
+            "cancelled" or Models.SubscriptionStatus.cancelled => "Отмененный",
+            "expired" or Models.SubscriptionStatus.expired => "Истекший",
+            "trial" or Models.SubscriptionStatus.trial => "Пробный период",
 
             _ => value?.ToString()
         };

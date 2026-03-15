@@ -95,7 +95,7 @@ public partial class MainViewModel : ViewModelBase,
     
     public void Receive(OpenOrCloseEditUserAndProfileMessage message)
     {
-        OverlayContent = OverlayContent is  EditProfileUserControlViewModel ? null : new EditProfileUserControlViewModel(message.User, message.Profile);;
+        OverlayContent = OverlayContent is  EditProfileUserControlViewModel ? null : new EditProfileUserControlViewModel();
     }
     
     public void Receive(OpenOrCloseConfirmDelete message)

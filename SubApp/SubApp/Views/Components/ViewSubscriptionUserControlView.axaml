@@ -37,7 +37,7 @@
                 <StackPanel Spacing="15">
                     <Border Classes="ContentCard">
                         <StackPanel Spacing="10">
-                            <TextBlock Text="{Binding Sub.Service.Name}" Classes="SectionHeader"/>
+                            <TextBlock Text="{Binding Sub.ServiceName}" Classes="SectionHeader"/>
                             <Separator Background="#2C2C2E" Height="1"/>
                                                
                             <StackPanel Spacing="15">

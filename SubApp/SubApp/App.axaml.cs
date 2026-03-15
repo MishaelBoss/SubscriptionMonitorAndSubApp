@@ -27,7 +27,7 @@ public partial class App : Application
         services.AddDbContext<AppDbContext>();
 
         services.AddTransient<LoginUserControlViewModel>();
-
+        
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             DisableAvaloniaDataAnnotationValidation();

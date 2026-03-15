@@ -17,7 +17,6 @@ namespace SubApp.ViewModels.Pages
     public partial class SubscriptionsUserControlViewModel : ViewModelBase, IRecipient<RefreshSubscriptionMessage>
     {
         [ObservableProperty] private ObservableCollection<Subscription> _subscriptions = [];
-        // public List<object> Status { get; } = ["Все", .. Enum.GetValues<SubscriptionStatus>().Cast<object>()];
         public List<string> Status { get; } = [ "Все", "Активные", "Просроченные", "Приостановленные", "Отмененные" ];
 
         
@@ -47,44 +46,46 @@ namespace SubApp.ViewModels.Pages
 
         private async Task Filter()
         {
-            await AuthService.TryAutoLoginAsync();
-            var userId = AuthService.CurrentSession?.Id;
-    
-            if (userId is null or 0) return;
+            if (AuthService.CurrentSession == null) return;
 
-            await Task.Run(async () => 
+            try
             {
-                await using var db = new AppDbContext();
-                var query = db.Subscriptions.Include(s => s.Service).Where(s => s.UserId == userId);
+                var api = new ApiService(AuthService.CurrentSession.Token);
+                var allSubscriptions = await api.GetSubscriptionsAsync();
 
                 var statusStr = SelectedStatus.ToString();
                 var today = DateTime.Today;
 
+                IEnumerable<Subscription> filteredQuery = allSubscriptions;
                 switch (statusStr)
                 {
                     case "Просроченные":
-                        query = query.Where(s => s.Status.ToLower() == "active" && s.NextPaymentDate < today);
+                        filteredQuery = allSubscriptions.Where(s => 
+                            s.Status.ToLower() == "active" && s.NextPaymentDate.Date < today);
                         break;
                     case "Активные":
-                        query = query.Where(s => s.Status.ToLower() == "active" && s.NextPaymentDate >= today);
+                        filteredQuery = allSubscriptions.Where(s => 
+                            s.Status.ToLower() == "active" && s.NextPaymentDate.Date >= today);
                         break;
                     case "Приостановленные":
-                        query = query.Where(s => s.Status.ToLower() == "paused");
+                        filteredQuery = allSubscriptions.Where(s => s.Status.ToLower() == "paused");
                         break;
                     case "Отмененные":
-                        query = query.Where(s => s.Status.ToLower() == "cancelled");
+                        filteredQuery = allSubscriptions.Where(s => s.Status.ToLower() == "cancelled");
                         break;
                     case "Все":
                     default:
                         break;
                 }
-
-                var list = await query.ToListAsync();
-        
+                
                 Dispatcher.UIThread.Post(() => {
-                    Subscriptions = new ObservableCollection<Subscription>(list);
+                    Subscriptions = new ObservableCollection<Subscription>(filteredQuery);
                 });
-            });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
         
         ~SubscriptionsUserControlViewModel()

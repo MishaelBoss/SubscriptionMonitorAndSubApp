@@ -1,9 +1,11 @@
 using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.EntityFrameworkCore;
-using SubApp.Data;
 using SubApp.Models;
 using SubApp.Scripts;
 
@@ -14,26 +16,37 @@ public partial class ConfirmationSubscriptionCancellationUserControlViewModel(Su
     [RelayCommand]
     public async Task CancelSubscription()
     {
-        if (sub == null) return;
+        if (sub == null) {
+            Console.WriteLine("DEBUG: Sub пустой");
+            return;
+        }
 
         try 
         {
-            await using var db = new AppDbContext();
-        
-            var dbSub = await db.Subscriptions.FirstOrDefaultAsync(s => s.Id == sub.Id);
-        
-            if (dbSub != null)
+            var session = AuthService.CurrentSession;
+            if (session == null)
             {
-                dbSub.Status = "Cancelled"; 
-                dbSub.UpdatedAt = DateTime.Now;
-            
-                await db.SaveChangesAsync();
-
-                sub.Status = "cancelled";
-            
-                WeakReferenceMessenger.Default.Send(new RefreshSubscriptionMessage());
-                WeakReferenceMessenger.Default.Send(new OpenOrCloseConfirmationSubscriptionCancellationMessage());
+                Console.WriteLine("DEBUG: Сессия пустая, загрузка отменена.");
+                return;
             }
+            
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", session.Token);
+            
+            var updateData = new { status = "cancelled", is_active = false };
+            var json = JsonSerializer.Serialize(updateData);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await client.PatchAsync($"http://10.0.2.2:8000/subscriptions/api/subscriptions/{sub.Id}/", content);
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                var err = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"[API ERROR] Не удалось отменить на сервере: {err}");
+            }
+            
+            WeakReferenceMessenger.Default.Send(new RefreshSubscriptionMessage());
+            WeakReferenceMessenger.Default.Send(new OpenOrCloseConfirmationSubscriptionCancellationMessage());
         }
         catch (Exception ex)
         {

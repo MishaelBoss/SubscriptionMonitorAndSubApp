@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -28,24 +30,35 @@ public partial class AddOrEditMailboxUserControlViewModel : ViewModelBase
     {
         Mailbox = mail;
         
-        _selectedProvider = mail?.Provider ?? "Gmail";
-
-        Email = mail != null ? mail.Email : string.Empty;
-        Password = mail != null ? mail.PasswordEncrypted : string.Empty;
-        ImapServer = mail != null ? mail.ImapServer : string.Empty;
-        ImapPort = mail?.ImapPort ?? 0;
+        Email = mail?.Email ?? string.Empty;
+        Password = mail?.PasswordEncrypted ?? string.Empty;
         FrequencyCheck = mail?.CheckFrequency ?? 60;
-        AutoCheck = mail == null || mail.IsActive;
-        
+        AutoCheck = mail?.IsActive ?? true;
+        ImapServer = mail?.ImapServer ?? string.Empty;
+        ImapPort = mail?.ImapPort ?? 0;
+
         if (mail != null)
         {
-            _imapServer = mail.ImapServer;
-            _imapPort = mail.ImapPort;
+            string providerFromDb = mail.Provider switch
+            {
+                "gmail" => "Gmail",
+                "yandex" => "Yandex",
+                "mailru" => "Mail.ru",
+                "outlook" => "Outlook",
+                "other" => "Другой (IMAP)",
+                _ => "Gmail"
+            };
+        
+            SelectedProvider = providerFromDb;
         }
-        else if (Providers.TryGetValue(_selectedProvider, out var config))
+        else
         {
-            _imapServer = config.Server;
-            _imapPort = config.Port;
+            SelectedProvider = "Gmail";
+            if (Providers.TryGetValue(SelectedProvider, out var config))
+            {
+                ImapServer = config.Server;
+                ImapPort = config.Port;
+            }
         }
     }
 
@@ -95,64 +108,60 @@ public partial class AddOrEditMailboxUserControlViewModel : ViewModelBase
     {
         if (!IsActiveConfirmButton) return;
         
-        await AuthService.TryAutoLoginAsync();
-        
-        if(AuthService.CurrentSession?.Id == 0 || AuthService.CurrentSession == null) return;
+        var session = AuthService.CurrentSession;
+        if(session == null) return;
         
         try
         {
-            await using var db = new AppDbContext();
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = 
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Token", session.Token);
             
-            Mailbox? mailbox;
+            var baseUrl = "http://10.0.2.2:8000/mail/api/mailboxes/";
+            var requestUrl = Mailbox == null ? baseUrl : $"{baseUrl}{Mailbox.Id}/";
+            var method = Mailbox == null ? HttpMethod.Post : HttpMethod.Put;
+            
+            var mailboxData = new {
+                email = Email,
+                provider = SelectedProvider.ToLower().Replace(" (imap)", ""),
+                password_encrypted = Password,
+                imap_server = ImapServer,
+                imap_port = ImapPort,
+                is_active = AutoCheck,
+                check_frequency = FrequencyCheck,
+                search_folder = "INBOX",
+                search_criteria = "FROM \"noreply\" OR FROM \"billing\" OR SUBJECT \"subscription\" OR SUBJECT \"payment\""
+            };
+            
+            var json = System.Text.Json.JsonSerializer.Serialize(mailboxData);
+            var buffer = System.Text.Encoding.UTF8.GetBytes(json);
 
-            if (Mailbox == null)
+            var content = new ByteArrayContent(buffer);
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+            var request = new HttpRequestMessage(method, requestUrl);
+            request.Version = new Version(1, 1);
+            request.Content = content;
+
+            var response = await client.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
             {
-                var exists = await db.Mailboxes
-                    .AnyAsync(m => m.UserId == AuthService.CurrentSession.Id && m.Email == Email);
-                
-                if (exists) {
-                    ErrorEmail = $"Почта {Email} уже добавлена!";
-                    return;
-                }
-                
-                mailbox = new Mailbox
-                {
-                    UserId = AuthService.CurrentSession.Id, CreatedAt = DateTime.UtcNow,
-                    SearchFolder = "INBOX",
-                    SearchCriteria = "FROM \"noreply\" OR FROM \"billing\" OR SUBJECT \"subscription\" OR SUBJECT \"payment\""
-                };
-                db.Mailboxes.Add(mailbox);
-                    
-                Console.WriteLine($"Ящик {mailbox.Email} сохранен, ID: {mailbox.Id}");
+                ClearForm();
+                Close();
+                WeakReferenceMessenger.Default.Send(new RefreshMailboxMessage());
             }
             else
             {
-                mailbox = await db.Mailboxes.FindAsync(Mailbox.Id);
-                if (mailbox == null) return;
-                mailbox.SearchFolder = Mailbox.SearchFolder;
-                mailbox.SearchCriteria = Mailbox.SearchCriteria;
-                    
-                Console.WriteLine($"Ящик {mailbox.Email} изменен, ID: {mailbox.Id}");
+                var error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Ошибка Django: {error}");
+                ErrorEmail = "Ошибка: " + error;
             }
-                
-            mailbox.Email = Email;
-            mailbox.PasswordEncrypted = Password;
-            mailbox.ImapServer = ImapServer;
-            mailbox.ImapPort = ImapPort;
-            mailbox.Provider = SelectedProvider;
-            mailbox.IsActive = AutoCheck;
-            mailbox.CheckFrequency = FrequencyCheck;
-            mailbox.UpdatedAt = DateTime.UtcNow;
-                
-            await db.SaveChangesAsync();
-                
-            ClearForm();
-            Close();
-            WeakReferenceMessenger.Default.Send(new RefreshMailboxMessage());
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex);
+            ErrorEmail = "Ошибка сети";
         }
     }
 

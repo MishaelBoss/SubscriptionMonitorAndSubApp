@@ -2,11 +2,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.EntityFrameworkCore;
 using SubApp.Data;
 using SubApp.Models;
 using SubApp.Scripts;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,8 +20,6 @@ public partial class HomeUserControlViewModel : ViewModelBase
     private const int PageSize = 5;
     [ObservableProperty] private bool _hasMoreDataSubscription = true;
     [ObservableProperty] private bool _hasMoreDataEmail = true;
-    private static readonly List<Subscription>? CacheSubscription = [];
-    private static readonly List<ParsedEmail>? CacheEmail = [];
     [ObservableProperty] private int _countSubscription;
     [ObservableProperty] private int _countEmail;
     [ObservableProperty] private double _totalMonthlyCost;
@@ -38,152 +34,123 @@ public partial class HomeUserControlViewModel : ViewModelBase
 
     public HomeUserControlViewModel()
     {
-        RecentPayments.Clear();
-
-        Task.Run(async () => { await InitializationAsync(); });
+        // Task.Run(async () => { await InitializationAsync(); });
+        _ = InitializationAsync();
     }
 
     private async Task InitializationAsync()
     {
-        await AuthService.TryAutoLoginAsync();
-        
-        if(AuthService.CurrentSession?.Id == 0) return;
-        
-        await using var db = new AppDbContext();
-        
-        await LoadRecent(db);
-        LoadSubscriptions(db);
+        try 
+        {
+            await AuthService.TryAutoLoginAsync();
+            
+            if(AuthService.CurrentSession == null) 
+            {
+                Console.WriteLine("DEBUG: Сессия пустая, загрузка отменена.");
+                return;
+            }
+
+            var api = new ApiService(AuthService.CurrentSession.Token);
+            
+            await LoadRecent(api);
+            await LoadSubscriptions(api);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"КРИТИЧЕСКАЯ ОШИБКА: {ex.Message}");
+        }
     }
 
-    private async Task LoadRecent(AppDbContext db)
+    private async Task LoadRecent(ApiService api)
     {
-        var all = db.ParsedEmails
-            .Where(s => AuthService.CurrentSession != null && s.Mailbox.UserId == AuthService.CurrentSession.Id)
+        var allEmails = await api.GetParsedEmailsAsync(); 
+        var userId = AuthService.CurrentSession?.Id;
+        
+        var userEmails = allEmails
+            .Where(e => e.UserId == userId || userId == 0) 
+            .OrderByDescending(e => e.ReceivedDate)
             .ToList();
         
-        CountEmail = all.Count;
-        
-        var recent = await db.ParsedEmails
-            .Where(e => AuthService.CurrentSession != null && e.Mailbox.UserId == AuthService.CurrentSession.Id)
-            .OrderByDescending(e => e.ReceivedDate)
-            .Take(PageSize)
-            .ToListAsync();
-        
-        if (CacheEmail != null && CacheEmail.Count != 0)
+        var totalCount = userEmails.Count;
+        var recent = userEmails.Take(PageSize).ToList();
+
+        Dispatcher.UIThread.Post(() => 
         {
-            RecentPayments = new ObservableCollection<ParsedEmail>(CacheEmail);
+            CountEmail = totalCount;
+            RecentPayments.Clear();
+            foreach (var email in recent) RecentPayments.Add(email);
             HasMoreDataEmail = RecentPayments.Count < CountEmail;
-            return;
-        }
-        
-        foreach (var email in recent)
-        {
-            RecentPayments.Add(email);
-            CacheEmail?.Add(email);
-        }
-        
-        HasMoreDataEmail = RecentPayments.Count < CountEmail;
+        });
     }
     
     [RelayCommand]
-    private void LoadMoreEmails()
+    private async Task LoadMoreEmails()
     {
-        var currentCount = RecentPayments.Count;
-        var totalCount = CountEmail;
-        
-        var remaining = totalCount - currentCount;
-        if (remaining <= 0) return;
-        
-        using var db = new AppDbContext();
-        var toTake = (remaining <= PageSize - 1) ? remaining : PageSize;
+        if (RecentPayments.Count >= CountEmail) return;
 
-        var newItems = db.ParsedEmails
-            .Where(e => AuthService.CurrentSession != null && e.Mailbox.UserId == AuthService.CurrentSession.Id)
-            .OrderBy(s => s.ReceivedDate)
-            .Include(e => e.Mailbox)
-            .Skip(currentCount)
-            .Take(toTake)
+        var api = new ApiService(AuthService.CurrentSession.Token);
+        var allEmails = await api.GetParsedEmailsAsync(); 
+
+        var newItems = allEmails
+            .Where(e => e.UserId == AuthService.CurrentSession.Id || AuthService.CurrentSession.Id == 0)
+            .OrderByDescending(e => e.ReceivedDate)
+            .Skip(RecentPayments.Count)
+            .Take(PageSize)
             .ToList();
 
-        foreach (var item in newItems)
-        {
-            RecentPayments.Add(item);
-            CacheEmail?.Add(item);
-        }
-        
-        HasMoreDataEmail = RecentPayments.Count < totalCount;
+        Dispatcher.UIThread.Post(() => {
+            foreach (var item in newItems) RecentPayments.Add(item);
+            HasMoreDataEmail = RecentPayments.Count < CountEmail;
+        });
     }
 
-    private void LoadSubscriptions(AppDbContext db) 
+    private async Task LoadSubscriptions(ApiService api) 
     {
-        var allActive = db.Subscriptions
-            .Where(s => s.IsActive)
-            .Where(s => AuthService.CurrentSession != null && s.UserId == AuthService.CurrentSession.Id)
-            .Include(s => s.Service).ToList();
-        
-        var count = allActive.Count;
+        var allActive = (await api.GetSubscriptionsAsync()).ToList();
+    
+        var totalCount = allActive.Count;
         var monthly = allActive.Sum(CalculateIndividualMonthlyCost);
         var yearly = allActive.Sum(CalculateIndividualYearlyCost);
-        
-        Dispatcher.UIThread.Post(() => 
-        {
-            CountSubscription = count;
-            TotalMonthlyCost = monthly;
-            TotalYearlyCost = yearly;
-        });
+        var initialList = allActive.OrderBy(s => s.NextPaymentDate).Take(3).ToList();
         
         var today = DateTime.Today;
         var nextWeek = today.AddDays(7);
         
         var upcomingPaymentsCount = allActive
             .Count(s => s.NextPaymentDate >= today && s.NextPaymentDate <= nextWeek);
-        
+
         NextPaymentSummary = upcomingPaymentsCount.ToString();
 
-        if (CacheSubscription != null && CacheSubscription.Count != 0)
+        Dispatcher.UIThread.Post(() => 
         {
-            Subscriptions = new ObservableCollection<Subscription>(CacheSubscription);
+            CountSubscription = totalCount;
+            TotalMonthlyCost = monthly;
+            TotalYearlyCost = yearly;
+            Subscriptions.Clear();
+            foreach (var sub in initialList) Subscriptions.Add(sub);
             HasMoreDataSubscription = Subscriptions.Count < CountSubscription;
-            return;
-        }
-
-        var initialList = allActive.OrderBy(s => s.NextPaymentDate).Take(3).ToList();
-        foreach (var sub in initialList)
-        {
-            Subscriptions.Add(sub);
-            CacheSubscription?.Add(sub);
-        }
-        
-        HasMoreDataSubscription = Subscriptions.Count < CountSubscription;
+        });
     }
     
     [RelayCommand]
-    private void LoadMoreSubscriptions()
+    private async Task LoadMoreSubscriptions()
     {
-        var currentCount = Subscriptions.Count;
-        var totalCount = CountSubscription;
-        
-        var remaining = totalCount - currentCount;
-        if (remaining <= 0) return;
-        
-        using var db = new AppDbContext();
-        var toTake = (remaining <= PageSize - 1) ? remaining : PageSize;
+        if (Subscriptions.Count >= CountSubscription) return;
 
-        var newItems = db.Subscriptions
-            .Include(s => s.Service)
-            .Where(s => s.IsActive)
+        var api = new ApiService(AuthService.CurrentSession.Token);
+        var allSubscriptions = await api.GetSubscriptionsAsync();
+
+        var newItems = allSubscriptions
             .OrderBy(s => s.NextPaymentDate)
-            .Skip(currentCount)
-            .Take(toTake)
+            .Skip(Subscriptions.Count)
+            .Take(PageSize)
             .ToList();
-
-        foreach (var item in newItems)
-        {
-            Subscriptions.Add(item);
-            CacheSubscription?.Add(item);
-        }
         
-        HasMoreDataSubscription = Subscriptions.Count < totalCount;
+        Dispatcher.UIThread.Post(() =>
+        {
+            foreach (var item in newItems) Subscriptions.Add(item);
+            HasMoreDataSubscription = Subscriptions.Count < CountSubscription;
+        });
     }
     
     private double CalculateIndividualMonthlyCost(Subscription sub)

@@ -7,9 +7,10 @@ namespace SubApp.ViewModels.Components;
 public partial class ConfirmLogoutUserControlViewModel : ViewModelBase
 {
     [RelayCommand]
-    public void Logou()
+    public void Logout()
     {
         AuthService.Logout();
+        WeakReferenceMessenger.Default.Send(new OpenOrCloseConfirmLogoutMessage());
     }
 
     [RelayCommand]

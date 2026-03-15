@@ -89,6 +89,7 @@
                                IsVisible="{Binding ErrorEdit, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                                TextWrapping="Wrap"
                                TextAlignment="Center"/>
+                    
                     <Button Classes="PrimaryButton" 
                             Content="Изменить" 
                             HorizontalAlignment="Stretch" 

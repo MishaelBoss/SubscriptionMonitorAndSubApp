@@ -4,6 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using SubApp.Data;
 using System;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 
@@ -18,21 +23,42 @@ public static class AuthService
     {
         try
         {
-            await using var db = new AppDbContext();
+            using var client = new HttpClient();
+            client.Timeout = TimeSpan.FromSeconds(10);
+            client.DefaultRequestHeaders.TransferEncodingChunked = false;
+            
+            var url = "http://10.0.2.2:8000/api-token-auth/";
+            
+            var loginData = new
+            {
+                username = username, 
+                password = password
+            };
+            
+            var json = JsonSerializer.Serialize(loginData);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await client.PostAsync(url, content);
 
-            var user = await db.Users.FirstOrDefaultAsync(u => u.Username == username);
-            if (user == null) return false;
+            if (!response.IsSuccessStatusCode) 
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Ошибка сервера: {errorContent}");
+                return false;
+            }
+            
+            var result = await response.Content.ReadFromJsonAsync<TokenResponse>();
+            if (result == null || string.IsNullOrEmpty(result.Token)) return false;
+            
+            CurrentSession = new UserSession(0, username, result.Token);
 
-            if (!VerifyDjangoPassword(password, user.Password)) return false;
-
-            CurrentSession = new UserSession(user.Id, user.Username);
-
-            await SecureStorage.SetAsync("current_user_id", user.Id.ToString());
+            await SecureStorage.SetAsync("auth_token", result.Token);
+            await SecureStorage.SetAsync("username", username);
 
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine(ex);
             return false;
         }
     }
@@ -41,16 +67,15 @@ public static class AuthService
     {
         try
         {
+            var token = await SecureStorage.GetAsync("auth_token");
+            var username = await SecureStorage.GetAsync("username");
             var userIdStr = await SecureStorage.GetAsync("current_user_id");
-            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out var userId))
+            
+            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(username))
                 return false;
 
-            await using var db = new AppDbContext();
-            var user = await db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            CurrentSession = new UserSession(long.Parse(userIdStr ?? "0"), username, token);
 
-            if (user == null) return false;
-
-            CurrentSession = new UserSession(user.Id, user.Username);
             return true;
         }
         catch
@@ -58,52 +83,33 @@ public static class AuthService
             return false;
         }
     }
+    
+    public static void SetSession(string token, string username)
+    {
+        CurrentSession = new UserSession(0, username, token);
+
+        Task.Run(async () => {
+            await SecureStorage.SetAsync("auth_token", token);
+            await SecureStorage.SetAsync("username", username);
+        });
+    }
 
     public static void Logout()
     {
+        SecureStorage.Remove("auth_token");
+        SecureStorage.Remove("username");
         SecureStorage.Remove("current_user_id");
         CurrentSession = null;
         WeakReferenceMessenger.Default.Send(new OpenOrCloseLoginMessage());
         WeakReferenceMessenger.Default.Send(new UserLoggedInMessage());
     }
 
-    private static bool VerifyDjangoPassword(string password, string djangoHash)
+    public class TokenResponse
     {
-        try
+        [JsonPropertyName("token")]
+        public string Token
         {
-            var parts = djangoHash.Split('$');
-            if (parts.Length != 4) return false;
-
-            var iterations = int.Parse(parts[1]);
-            var salt = parts[2];
-            var hash = parts[3];
-
-            var saltBytes = System.Text.Encoding.UTF8.GetBytes(salt);
-            var derived = KeyDerivation.Pbkdf2(
-                password: password,
-                salt: saltBytes,
-                prf: KeyDerivationPrf.HMACSHA256,
-                iterationCount: iterations,
-                numBytesRequested: 32);
-
-            return Convert.ToBase64String(derived) == hash;
+            get; set;
         }
-        catch { return false; }
-    }
-
-    public static string HashPasswordDjango(string password)
-    {
-        const int iterations = 600000;
-        const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        var salt = new string(Enumerable.Repeat(chars, 12).Select(s => s[Random.Shared.Next(s.Length)]).ToArray());
-
-        byte[] hashBytes = KeyDerivation.Pbkdf2(
-            password: password,
-            salt: System.Text.Encoding.UTF8.GetBytes(salt),
-            prf: KeyDerivationPrf.HMACSHA256,
-            iterationCount: iterations,
-            numBytesRequested: 32);
-
-        return $"pbkdf2_sha256${iterations}${salt}${Convert.ToBase64String(hashBytes)}";
     }
 }

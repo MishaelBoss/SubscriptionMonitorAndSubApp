@@ -5,6 +5,10 @@ using SubApp.Data;
 using SubApp.Models;
 using SubApp.Scripts;
 using System;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,68 +46,52 @@ public partial class RegistrationUserControlViewModel : ViewModelBase
         Console.WriteLine($"Начало регистрации пользователя: {Username}");
 
         try
-        {   
-            await using var db = new AppDbContext();
-
-            var exists = await db.Users.AnyAsync(u => u.Username == Username);
-            if (exists) {
-                RegistrationError = $"Пользователь {Username} уже существует";
-                Console.WriteLine($"Пользователь {Username} уже существует");
-                return;
-            }
-
-            await using var transaction = await db.Database.BeginTransactionAsync();
-            try
-            {
-                var newUser = new User
-                {
-                    Username = Username,
-                    Email = Email,
-                    Password = AuthService.HashPasswordDjango(Password),
-                    DateJoined = DateTime.UtcNow,
-                    IsActive = true,
-                    FirstName = string.Empty,
-                    LastName = string.Empty,
-                    IsStaff = false,
-                    IsSuperuser = false
-                };
-
-                db.Users.Add(newUser);
-                await db.SaveChangesAsync();
-                Console.WriteLine($"User создан, ID: {newUser.Id}");
+        {
+            using var client = new HttpClient();
+            var url = "http://10.0.2.2:8000/accounts/api/register/";
             
-                var newProfile = new Profile
-                {
-                    UserId = newUser.Id,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
-
-                db.Profiles.Add(newProfile);
-                await db.SaveChangesAsync();
-
-                await transaction.CommitAsync();
-                Console.WriteLine($"Регистрация успешна для {Username}");
-
-                await AuthService.LoginAsync(Username, Password);
-
-                WeakReferenceMessenger.Default.Send(new OpenOrCloseRegistrationMessage());
-                WeakReferenceMessenger.Default.Send(new UserLoggedInMessage());
-            }
-            catch (Exception ex)
+            var regData = new
             {
-                Console.WriteLine(ex);
-                await transaction.RollbackAsync();
-            }
+                username = Username, 
+                password = Password, 
+                email = Email
+            };
             
+            var json = JsonSerializer.Serialize(regData);
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+
+            request.Version = new Version(1, 0); 
+            request.Content = new StringContent(json, Encoding.UTF8, "application/json");
+            
+            var response = await client.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonString = await response.Content.ReadAsStringAsync();
+                var result = JsonSerializer.Deserialize<AuthService.TokenResponse>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                
+                if (result != null)
+                {
+                    Console.WriteLine($"Регистрация успешна для {Username}");
+                    
+                    AuthService.SetSession(result.Token, Username); 
+                    WeakReferenceMessenger.Default.Send(new OpenOrCloseRegistrationMessage());
+                    WeakReferenceMessenger.Default.Send(new UserLoggedInMessage());
+                    ClearForm();
+                }
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(error);
+                RegistrationError = "Ошибка: " + error;
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine(ex);
-            RegistrationError = "Username уже занят!";
+            RegistrationError = "Нет связи с сервером";
         }
-
-        ClearForm();
     }
 
     [RelayCommand]

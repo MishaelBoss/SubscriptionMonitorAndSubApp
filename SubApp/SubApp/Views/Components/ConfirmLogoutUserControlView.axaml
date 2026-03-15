@@ -51,7 +51,7 @@
                             HorizontalContentAlignment="Center"
                             VerticalContentAlignment="Center"
                             CornerRadius="15"
-                            Command="{Binding LogouCommand}"/>
+                            Command="{Binding LogoutCommand}"/>
                     
                     <Button Content="Отмена" 
                             Background="Transparent" 

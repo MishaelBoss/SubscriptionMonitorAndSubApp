@@ -1,8 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.EntityFrameworkCore;
 using SubApp.Data;
 using SubApp.Models;
 using SubApp.Scripts;
@@ -23,22 +23,22 @@ namespace SubApp.ViewModels.Pages
         
         private async Task LoadSubscriptions() 
         {
-            await AuthService.TryAutoLoginAsync();
-            var userId = AuthService.CurrentSession?.Id;
-            if (userId is null or 0) return;
-
-            await Task.Run(async () => 
+            try
             {
-                await using var db = new AppDbContext();
+                await AuthService.TryAutoLoginAsync();
             
-                var allSubscriptions = await db.Subscriptions
-                    .Where(s => s.UserId == userId)
-                    .Include(s => s.Service)
-                    .ToListAsync();
+                if(AuthService.CurrentSession == null) 
+                {
+                    Console.WriteLine("DEBUG: Сессия пустая, загрузка отменена.");
+                    return;
+                }
 
-                var activeSubs = allSubscriptions.Where(s => s.IsActive).ToList();
+                var api = new ApiService(AuthService.CurrentSession.Token);
                 
-                var count = allSubscriptions.Count;
+                var allActive = (await api.GetSubscriptionsAsync()).ToList();
+                var activeSubs = allActive.Where(s => s.IsActive).ToList();
+                
+                var count = allActive.Count;
                 var activeCount = activeSubs.Count;
                 var monthly = activeSubs.Sum(CalculateIndividualMonthlyCost);
                 var yearly = activeSubs.Sum(CalculateIndividualYearlyCost);
@@ -50,7 +50,11 @@ namespace SubApp.ViewModels.Pages
                     TotalMonthlyCost = monthly;
                     TotalYearlyCost = yearly;
                 });
-            });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
         
         private double CalculateIndividualMonthlyCost(Subscription sub)

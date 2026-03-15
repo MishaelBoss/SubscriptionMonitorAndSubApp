@@ -7,7 +7,11 @@ using SubApp.Scripts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 
 namespace SubApp.ViewModels.Components;
 
@@ -39,6 +43,8 @@ public partial class AddOrEditNewSubscriptionUserControlViewModel : ViewModelBas
     [ObservableProperty] private bool _automaticRenewal = true;
     [ObservableProperty] private string _notes = string.Empty;
     
+    private readonly string _baseUrl = "http://10.0.2.2:8000/subscriptions/api/subscriptions/";
+    
     public string ConfirmButtonText
         => Sub == null ? "Добавить" : "Сохранить";
 
@@ -50,7 +56,7 @@ public partial class AddOrEditNewSubscriptionUserControlViewModel : ViewModelBas
 
     public AddOrEditNewSubscriptionUserControlViewModel(Subscription? sub = null)
     {
-        LoadData();
+        Task.Run(LoadDataAsync);
 
         if (sub != null)
         {
@@ -70,67 +76,80 @@ public partial class AddOrEditNewSubscriptionUserControlViewModel : ViewModelBas
         }
     }
     
-    private void LoadData()
+    private async Task LoadDataAsync()
     {
-        using var db = new AppDbContext();
-        Services = [.. db.Services.Where(s => s.IsActive)];
+        try
+        {
+            using var client = new HttpClient(); 
+            const string url = "http://10.0.2.2:8000/subscriptions/api/";
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", AuthService.CurrentSession?.Token);
+            
+            var response = await client.GetFromJsonAsync<List<Service>>(url + "services/");
+            if (response != null)
+            {
+                Dispatcher.UIThread.Post(() => {
+                    Services = response;
+                    if (Sub != null) SelectedService = Services.FirstOrDefault(s => s.Id == Sub.ServiceId);
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
     }
     
     [RelayCommand]
     public async Task Save()
     {
-        await AuthService.TryAutoLoginAsync();
-        
-        if(AuthService.CurrentSession?.Id == 0 || AuthService.CurrentSession == null) return;
+        if (!IsActiveConfirmButton || AuthService.CurrentSession == null) return;
         
         Console.WriteLine($"Начало записи {SubscriptionName}");
         
         try
         {
-            Subscription? subscription;
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", AuthService.CurrentSession.Token);
+            
+            var subData = new {
+                service = SelectedService!.Id,
+                name = string.IsNullOrWhiteSpace(SubscriptionName) ? SelectedService.Name : SubscriptionName,
+                amount = Sum ?? 0,
+                currency = SelectedCurrency.ToString(),
+                billing_cycle = SelectedPaymentPeriod.ToString(),
+                status = SelectedStatus.ToString(),
+                start_date = StartDate?.ToString("yyyy-MM-dd"),
+                next_payment_date = NextPaymentDate?.ToString("yyyy-MM-dd"),
+                auto_renew = AutomaticRenewal,
+                notes = Notes,
+                billing_cycle_days = DaysPeriod ?? 30
+            };
+            
+            var json = System.Text.Json.JsonSerializer.Serialize(subData);
+            var buffer = System.Text.Encoding.UTF8.GetBytes(json);
+            var content = new ByteArrayContent(buffer);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-            if (SelectedService == null || Sum == null) return;
+            var method = Sub == null ? HttpMethod.Post : HttpMethod.Put;
+            var requestUrl = Sub == null ? _baseUrl : $"{_baseUrl}{Sub.Id}/";
+        
+            var request = new HttpRequestMessage(method, requestUrl);
+            request.Version = new Version(1, 1);
+            request.Content = content;
 
-            await using var db = new AppDbContext();
+            var response = await client.SendAsync(request);
 
-            if (Sub == null)
+            if (response.IsSuccessStatusCode)
             {
-                subscription = new Subscription
-                {
-                    Uuid = Guid.NewGuid(),
-                    CreatedAt = DateTime.Now,
-                    UserId = (int)AuthService.CurrentSession.Id,
-                    IsActive = true
-                };
-                
-                db.Subscriptions.Add(subscription);
+                Close();
+                WeakReferenceMessenger.Default.Send(new RefreshSubscriptionMessage());
             }
             else
             {
-                subscription = await db.Subscriptions.FindAsync(Sub.Id);
-                if (subscription == null) return;
+                var error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"[DJANGO ERROR]: {error}");
+                ErroredSubscription = "Ошибка: " + error;
             }
-            
-            subscription.ServiceId = SelectedService.Id;
-            subscription.Name = string.IsNullOrWhiteSpace(SubscriptionName) ? SelectedService.Name : SubscriptionName;
-            subscription.Amount = Sum ?? 0;
-            subscription.Currency = SelectedCurrency.ToString();
-            subscription.BillingCycle = SelectedPaymentPeriod.ToString();
-            subscription.Status = SelectedStatus.ToString();
-            subscription.StartDate = StartDate ?? DateTime.Now;
-            subscription.NextPaymentDate = NextPaymentDate ?? DateTime.Now;
-            subscription.AutoRenew = AutomaticRenewal;
-            subscription.Notes = Notes;
-            subscription.BillingCycleDays = DaysPeriod ?? 30;
-            subscription.UpdatedAt = DateTime.Now;
-            subscription.LastChecked = DateTime.Now;
-            
-            await db.SaveChangesAsync();
-        
-            Close();
-            ClearForm();
-
-            WeakReferenceMessenger.Default.Send(new RefreshSubscriptionMessage());
         }
         catch (Exception ex)
         {

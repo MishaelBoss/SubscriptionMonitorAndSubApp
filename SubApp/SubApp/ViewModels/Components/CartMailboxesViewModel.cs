@@ -32,38 +32,11 @@ public partial class CartMailboxesViewModel(Mailbox mail) : ViewModelBase
             Status = "Парсинг...";
 
             WeakReferenceMessenger.Default.Send(new OpenOrCloseProgressModalMessage(mail.Id));
-
-            await _emailService.ProcessMailboxAsync(mail, daysToLookBack: 180);
-
-            // await Task.Run(async () =>
-            // {
-            //     using var client = new ImapClient();
-            //     await client.ConnectAsync(mail.ImapServer, mail.ImapPort, true);
-            //     await client.AuthenticateAsync(mail.Email, mail.PasswordEncrypted);
-            //
-            //     var inbox = client.Inbox;
-            //     await inbox.OpenAsync(FolderAccess.ReadOnly);
-            //
-            //     var query = SearchQuery.DeliveredAfter(DateTime.Now.AddMonths(-6));
-            //     var uids = await inbox.SearchAsync(query);
-            //     var total = uids.Count;
-            //
-            //     for (int i = 0; i < total; i++)
-            //     {
-            //         var message = await inbox.GetMessageAsync(uids[i]);
-            //         var result = ParseMessageContent(message);
-            //
-            //         if (result.IsSubscription)
-            //         {
-            //             await SaveSubscriptionToDb(result, message, uids[i].ToString());
-            //         }
-            //
-            //         WeakReferenceMessenger.Default.Send(new ParsingProgressMessage(
-            //             mail.Id, i + 1, total, "Анализ писем...", $"Обработано: {message.Subject}"));
-            //     }
-            //
-            //     await client.DisconnectAsync(true);
-            // });
+            
+            await Task.Run(async () => 
+            {
+                await _emailService.ProcessMailboxAsync(mail, daysToLookBack: 180);
+            });
 
             Status = "Завершено";
             LastCheck = DateTime.Now.ToString("g");
@@ -98,30 +71,7 @@ public partial class CartMailboxesViewModel(Mailbox mail) : ViewModelBase
             Status = "Быстрая проверка...";
             
             await _emailService.ProcessMailboxAsync(mail, daysToLookBack: 2);
-
-            // await Task.Run(async () =>
-            // {
-            //     using var client = new ImapClient();
-            //     await client.ConnectAsync(mail.ImapServer, mail.ImapPort, true);
-            //     await client.AuthenticateAsync(mail.Email, mail.PasswordEncrypted);
-            //
-            //     var inbox = client.Inbox;
-            //     await inbox.OpenAsync(FolderAccess.ReadOnly);
-            //
-            //     var count = inbox.Count;
-            //     var startIndex = Math.Max(0, count - 5);
-            //
-            //     for (int i = count - 1; i >= startIndex; i--)
-            //     {
-            //         var message = await inbox.GetMessageAsync(i);
-            //         var messageId = message.MessageId ?? $"fast_{i}_{DateTime.Now.Ticks}";
-            //         var result = ParseMessageContent(message);
-            //         await SaveSubscriptionToDb(result, message, messageId);
-            //     }
-            //
-            //     await client.DisconnectAsync(true);
-            // });
-
+            
             Status = "Активен";
             LastCheck = DateTime.Now.ToString("g");
             

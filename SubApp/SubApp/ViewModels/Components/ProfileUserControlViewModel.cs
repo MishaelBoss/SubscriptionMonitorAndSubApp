@@ -5,6 +5,9 @@ using SubApp.Data;
 using SubApp.Scripts;
 using System;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using SubApp.Models;
 
@@ -18,9 +21,6 @@ public partial class ProfileUserControlViewModel : ViewModelBase
     [ObservableProperty][NotifyPropertyChangedFor(nameof(FullName))] private string? _lastName;
     [ObservableProperty] private string? _phone;
     [ObservableProperty] private DateTime? _dateJoined;
-
-    private User? User { get; set; }
-    private Profile? Profile { get; set; }
 
     public string FullName => (string.IsNullOrEmpty(FirstName) && string.IsNullOrEmpty(LastName))
         ? "Имя не указано"
@@ -41,12 +41,12 @@ public partial class ProfileUserControlViewModel : ViewModelBase
     [RelayCommand]
     public void Edit()
     {
-        WeakReferenceMessenger.Default.Send(new OpenOrCloseEditUserAndProfileMessage(User, Profile));
+        WeakReferenceMessenger.Default.Send(new OpenOrCloseEditUserAndProfileMessage());
     }
 
-    public ProfileUserControlViewModel() 
+    public ProfileUserControlViewModel()
     {
-        Task.Run(async () => await InitializeAsync());
+        _ = InitializeAsync();
     }
 
     private async Task InitializeAsync()
@@ -56,23 +56,20 @@ public partial class ProfileUserControlViewModel : ViewModelBase
         var currentUserId = AuthService.CurrentSession?.Id;
         if (currentUserId == null) return;
 
-        await using var db = new AppDbContext();
-
-        User = db.Users.FirstOrDefault(u => u.Id == currentUserId);
-        Profile = db.Profiles.FirstOrDefault(p => p.UserId == currentUserId);
-
-        if (User != null)
+        var client = new HttpClient();
+        const string url = "http://10.0.2.2:8000/accounts/api/profile/";
+        
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", AuthService.CurrentSession?.Token);
+        
+        var data = await client.GetFromJsonAsync<UserProfileDto>(url);
+        if (data != null)
         {
-            UserName = !string.IsNullOrWhiteSpace(User?.Username) ? User.Username : "Нет указано";
-            FirstName = User?.FirstName ?? "Не указано";
-            LastName = User?.LastName ?? "Не указано";
-            Email = !string.IsNullOrWhiteSpace(User?.Email) ? User.Email : "Нет указано";
-            DateJoined = User?.DateJoined;
-        }
-
-        if (Profile != null)
-        {
-            Phone = !string.IsNullOrWhiteSpace(Profile.Phone) ? Profile.Phone : "Нет указано";
+            UserName = data.username;
+            FirstName = data.first_name;
+            LastName = data.last_name;
+            Email = data.email;
+            Phone = data.phone;
+            DateJoined = data.date_joined;
         }
     }
 }

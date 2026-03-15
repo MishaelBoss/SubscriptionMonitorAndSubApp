@@ -1,11 +1,17 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
-using Microsoft.EntityFrameworkCore;
 using MimeKit;
 using SubApp.Data;
 using SubApp.Models;
@@ -15,14 +21,23 @@ namespace SubApp.Services;
 
 public class EmailProcessingService
 {
+    private const string BaseApiUrl = "http://10.0.2.2:8000";
+
     public async Task ProcessMailboxAsync(Mailbox mail, int daysToLookBack = 2)
     {
         try 
         {
-            using var client = new ImapClient();
+            if (string.IsNullOrWhiteSpace(mail.ImapServer))
+            {
+                Console.WriteLine($"[EmailService] ОШИБКА: Сервер IMAP пуст для {mail.Email}. Проверь JSON-аттрибуты в модели!");
+                return;
+            }
             
-            await client.ConnectAsync(mail.ImapServer, mail.ImapPort, true);
-            await client.AuthenticateAsync(mail.Email, mail.PasswordEncrypted);
+            using var client = new ImapClient();
+            Console.WriteLine($"[DEBUG] Пытаюсь подключиться к серверу: '{mail.ImapServer}' на порт {mail.ImapPort}");
+            
+            await client.ConnectAsync(mail.ImapServer, mail.ImapPort).ConfigureAwait(false);
+            await client.AuthenticateAsync(mail.Email, mail.PasswordEncrypted).ConfigureAwait(false);
 
             var inbox = client.Inbox;
             await inbox.OpenAsync(FolderAccess.ReadOnly);
@@ -35,16 +50,19 @@ public class EmailProcessingService
                 var message = await inbox.GetMessageAsync(uid);
                 var result = ParseMessageContent(message);
                 
-                var current = uids.IndexOf(uid) + 1;
+                int current = uids.IndexOf(uid) + 1;
                 WeakReferenceMessenger.Default.Send(new ParsingProgressMessage(
                     mail.Id, current, uids.Count, "Анализ писем...", $"Письмо {current} из {uids.Count}"));
                 
-                await SaveSubscriptionToDb(result, message, uid.ToString(), mail);
+                if (result.IsSubscription)
+                {
+                    await SaveSubscriptionToDb(result, message, mail);
+                }
             }
 
             await client.DisconnectAsync(true);
             
-            await UpdateLastCheckedDate(mail.Id);
+            await UpdateLastCheckedDateApi(mail);
         }
         catch (Exception ex)
         {
@@ -52,133 +70,270 @@ public class EmailProcessingService
         }
     }
     
-    private (bool IsSubscription, string Service, decimal Amount, Currency Currency) ParseMessageContent(MimeMessage message)
+    private (bool IsSubscription, string ServiceName, decimal Amount, Currency Currency) ParseMessageContent(MimeMessage message)
     {
         var knownServices = new[] { "Netflix", "Spotify", "Yandex", "YouTube", "Adobe", "Apple" };
-    
-        var subject = message.Subject?.ToLower()?? string.Empty;
+        var subject = message.Subject?.ToLower() ?? string.Empty;
         var body = message.TextBody?.ToLower() ?? string.Empty;
         var from = message.From.ToString().ToLower();
 
         foreach (var service in knownServices)
         {
-            if (subject == null || (!from.Contains(service.ToLower()) && !subject.Contains(service.ToLower()))) continue;
-            
-            var match = Regex.Match(body, @"(\d+[\.,]?\d{0,2})\s?(руб|₽|\$|eur)");
-            
-            Currency foundCurrency = Currency.RUB;
-            decimal amount = 0;
-
-            if (!match.Success) return (true, service, amount, foundCurrency);
-            decimal.TryParse(match.Groups[1].Value.Replace(",", "."), 
-                System.Globalization.NumberStyles.Any, 
-                System.Globalization.CultureInfo.InvariantCulture, out amount);
-            
-            var symbol = match.Groups[2].Value.ToLower();
-            foundCurrency = symbol switch
+            if (from.Contains(service.ToLower()) || subject.Contains(service.ToLower()))
             {
-                "$" => Currency.USD,
-                "eur" => Currency.EUR,
-                _ => Currency.RUB
-            };
+                var match = Regex.Match(body, @"(\d+[\.,]?\d{0,2})\s?(руб|₽|\$|eur)");
+                Currency foundCurrency = Currency.RUB;
+                decimal amount = 0;
 
-            return (true, service, amount, foundCurrency);
+                if (match.Success)
+                {
+                    decimal.TryParse(match.Groups[1].Value.Replace(",", "."), 
+                        System.Globalization.NumberStyles.Any, 
+                        System.Globalization.CultureInfo.InvariantCulture, out amount);
+                    
+                    var symbol = match.Groups[2].Value.ToLower();
+                    foundCurrency = symbol switch {
+                        "$" => Currency.USD,
+                        "eur" => Currency.EUR,
+                        _ => Currency.RUB
+                    };
+                }
+                return (true, service, amount, foundCurrency);
+            }
         }
-
         return (false, "", 0, Currency.RUB);
     }
     
-    private async Task SaveSubscriptionToDb((bool IsSubscription, string ServiceName, decimal Amount, Currency Currency) result, MimeMessage message, string messageId, Mailbox mail)
+    /*private async Task SaveSubscriptionToDb((bool IsSubscription, string ServiceName, decimal Amount, Currency Currency) result, MimeMessage message, Mailbox mail)
     {
-        await using var db = new AppDbContext();
-
-        if (await db.ParsedEmails.AnyAsync(e => e.MessageId == messageId)) return;
-
-        var targetSub = await db.Subscriptions
-            .Include(s => s.Service)
-            .FirstOrDefaultAsync(s => s.Service.Name == result.ServiceName 
-                                   && s.UserId == mail.UserId 
-                                   && s.Amount == result.Amount);
-
-        var parsedEmail = new ParsedEmail
-        {
-            MailboxId = mail.Id,
-            MessageId = messageId,
-            Subject = message.Subject ?? "Без темы",
-            FromEmail = message.From.ToString(),
-            ReceivedDate = message.Date.DateTime,
-            ServiceName = result.ServiceName,
-            Amount = result.Amount,
-            ProcessedSubscriptionId = targetSub?.Id,
-            RawContent = message.TextBody?[..Math.Min(message.TextBody.Length, 1000)] ?? "",
-            IsProcessed = true,
-            ErrorMessage = ""
+        var session = AuthService.CurrentSession;
+        if (session == null) return;
+        
+        using var client = new HttpClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", session.Token);
+        
+        var emailData = new {
+            mailbox = mail.Id,
+            message_id = message.MessageId,
+            subject = message.Subject ?? "Без темы",
+            from_email = message.From.ToString(),
+            received_date = message.Date.DateTime.ToString("yyyy-MM-ddTHH:mm:ss"),
+            service_name = result.ServiceName,
+            amount = result.Amount,
+            is_processed = true,
+            raw_content = message.TextBody?[..Math.Min(message.TextBody.Length, 500)] ?? ""
         };
-        db.ParsedEmails.Add(parsedEmail);
+
+        var emailJson = JsonSerializer.Serialize(emailData);
+        var emailRequest = new HttpRequestMessage(HttpMethod.Post, "http://10.0.2.2");
+        emailRequest.Version = new Version(1, 1);
+        emailRequest.Content = new StringContent(emailJson, Encoding.UTF8, "application/json");
+    
+        var emailResponse = await client.SendAsync(emailRequest);
+        if (emailResponse.IsSuccessStatusCode) {
+            Console.WriteLine("[EmailService] Письмо успешно сохранено в ParsedEmails");
+        } else {
+            var err = await emailResponse.Content.ReadAsStringAsync();
+            Console.WriteLine($"[EmailService] Ошибка сохранения письма: {err}");
+        }
+
+        int serviceId = 0;
+        var servicesUrl = $"{BaseApiUrl}/subscriptions/api/services/";
+        var services = await client.GetFromJsonAsync<List<Service>>(servicesUrl);
+        
+        var existingService = services?.FirstOrDefault(s => s.Name.ToLower() == result.ServiceName.ToLower());
+        
+        if (existingService != null) {
+            serviceId = existingService.Id;
+        } else {
+            var newServiceData = new { name = result.ServiceName, is_active = true };
+            var createServiceReq = new HttpRequestMessage(HttpMethod.Post, servicesUrl);
+            createServiceReq.Version = new Version(1, 1);
+            createServiceReq.Content = JsonContent.Create(newServiceData);
+            
+            var serviceResp = await client.SendAsync(createServiceReq);
+            if (serviceResp.IsSuccessStatusCode) {
+                var createdService = await serviceResp.Content.ReadFromJsonAsync<Service>();
+                serviceId = createdService?.Id ?? 1;
+            }
+        }
+
+        var subsUrl = $"{BaseApiUrl}/subscriptions/api/subscriptions/";
+        var allSubs = await client.GetFromJsonAsync<List<Subscription>>(subsUrl);
+        
+        var targetSub = allSubs?.FirstOrDefault(s => 
+            s.Name.ToLower().Contains(result.ServiceName.ToLower()) && 
+            s.Amount == result.Amount);
+
+        if (targetSub != null) 
+        {
+            targetSub.MarkAsPaid(message.Date.DateTime);
+            
+            var request = new HttpRequestMessage(HttpMethod.Put, $"{subsUrl}{targetSub.Id}/");
+            request.Version = new Version(1, 1);
+            
+            var updateData = new {
+                id = targetSub.Id,
+                service = targetSub.ServiceId,
+                name = targetSub.Name,
+                amount = targetSub.Amount,
+                currency = targetSub.Currency,
+                billing_cycle = targetSub.BillingCycle,
+                status = targetSub.Status,
+                start_date = targetSub.StartDate.ToString("yyyy-MM-dd"),
+                next_payment_date = targetSub.NextPaymentDate.ToString("yyyy-MM-dd"),
+                last_checked = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss")
+            };
+            
+            var json = System.Text.Json.JsonSerializer.Serialize(updateData);
+            var buffer = System.Text.Encoding.UTF8.GetBytes(json);
+
+            var content = new ByteArrayContent(buffer);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            
+            request.Content = content;
+            
+            var response = await client.SendAsync(request);
+    
+            if (!response.IsSuccessStatusCode) {
+                var error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"[DJANGO DATA ERROR]: {error}");
+            }
+        } else {
+            var newSubData = new {
+                service = serviceId,
+                name = result.ServiceName,
+                amount = result.Amount,
+                currency = result.Currency.ToString(),
+                billing_cycle = "monthly",
+                status = "active",
+                start_date = message.Date.DateTime.ToString("yyyy-MM-dd"),
+                next_payment_date = message.Date.DateTime.AddMonths(1).ToString("yyyy-MM-dd"),
+                auto_renew = true
+            };
+            
+            var json = System.Text.Json.JsonSerializer.Serialize(newSubData);
+            var buffer = System.Text.Encoding.UTF8.GetBytes(json);
+
+            var content = new ByteArrayContent(buffer);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            var request = new HttpRequestMessage(HttpMethod.Post, subsUrl);
+            request.Version = new Version(1, 1);
+            
+            request.Content = content;
+            
+            await client.SendAsync(request);
+        }
+
+        WeakReferenceMessenger.Default.Send(new RefreshSubscriptionMessage());
+    }*/
+    
+    private async Task SaveSubscriptionToDb((bool IsSubscription, string ServiceName, decimal Amount, Currency Currency) result, MimeMessage message, Mailbox mail)
+    {
+        var session = AuthService.CurrentSession;
+        if (session == null) return;
+
+        using var client = new HttpClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", session.Token);
+
+        var emailData = new {
+            mailbox = mail.Id,
+            message_id = message.MessageId,
+            subject = message.Subject ?? "Без темы",
+            from_email = message.From.Mailboxes.FirstOrDefault()?.Address ?? "unknown@email.com",
+            received_date = message.Date.DateTime.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+            service_name = result.ServiceName,
+            amount = result.Amount,
+            is_processed = true,
+            raw_content = message.TextBody != null ? message.TextBody[..Math.Min(message.TextBody.Length, 500)] : ""
+        };
+
+        var emailJson = JsonSerializer.Serialize(emailData);
+        var emailBuffer = Encoding.UTF8.GetBytes(emailJson);
+        
+        var emailContent = new ByteArrayContent(emailBuffer);
+        emailContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+        var emailRequest = new HttpRequestMessage(HttpMethod.Post, "http://10.0.2.2:8000/mail/api/emails/");
+        emailRequest.Version = new Version(1, 1);
+        emailRequest.Content = emailContent;
+        
+        var emailResp = await client.SendAsync(emailRequest);
+        if (!emailResp.IsSuccessStatusCode)
+        {
+            var err = await emailResp.Content.ReadAsStringAsync();
+            Console.WriteLine($"[API ERROR] Письмо не сохранено: {err}");
+        }
+
+        var api = new ApiService(session.Token);
+        var allSubs = await api.GetSubscriptionsAsync();
+        
+        var targetSub = allSubs.FirstOrDefault(s => 
+            s.Name.ToLower().Contains(result.ServiceName.ToLower()) && 
+            s.Amount == result.Amount);
 
         if (targetSub != null)
         {
-            targetSub.MarkAsPaid(message.Date.DateTime); 
-            targetSub.UpdatedAt = DateTime.Now;
-            await db.SaveChangesAsync();
+            targetSub.MarkAsPaid(message.Date.DateTime);
             
-            WeakReferenceMessenger.Default.Send(new RefreshSubscriptionMessage());
-            return;
-        }
-
-        if (!result.IsSubscription) 
-        {
-            await db.SaveChangesAsync();
-            return;
-        }
-
-        var service = await db.Services.FirstOrDefaultAsync(s => s.Name == result.ServiceName);
-        if (service == null)
-        {
-            service = new Service { 
-                Name = result.ServiceName, 
-                IsActive = true, 
-                Website = "", 
-                CreatedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") 
+            var subUpdateData = new {
+                service = targetSub.ServiceId,
+                name = targetSub.Name,
+                amount = targetSub.Amount,
+                currency = targetSub.Currency,
+                billing_cycle = targetSub.BillingCycle,
+                status = targetSub.Status,
+                start_date = targetSub.StartDate.ToString("yyyy-MM-dd"),
+                next_payment_date = targetSub.NextPaymentDate.ToString("yyyy-MM-dd"),
+                is_active = targetSub.IsActive
             };
-            db.Services.Add(service);
-            await db.SaveChangesAsync();
+
+            var subJson = JsonSerializer.Serialize(subUpdateData);
+            var subBuffer = Encoding.UTF8.GetBytes(subJson);
+            var subContent = new ByteArrayContent(subBuffer);
+            subContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            var subRequest = new HttpRequestMessage(HttpMethod.Put, $"http://10.0.2.2:8000/subscriptions/api/subscriptions/{targetSub.Id}/");
+            subRequest.Version = new Version(1, 1);
+            subRequest.Content = subContent;
+            
+            await client.SendAsync(subRequest);
         }
-
-        var newSub = new Subscription
-        {
-            Uuid = Guid.NewGuid(),
-            Name = result.ServiceName,
-            Amount = result.Amount,
-            UserId = (int)mail.UserId,
-            ServiceId = service.Id,
-            Currency = result.Currency.ToString(), 
-            BillingCycle = "monthly",
-            Status = "active",
-            StartDate = DateTime.Now,
-            NextPaymentDate = DateTime.Now.AddMonths(1),
-            Notes = "",
-            AutoRenew = true,
-            IsActive = true,
-            CreatedAt = DateTime.Now,
-            UpdatedAt = DateTime.Now,
-            LastChecked = DateTime.Now
-        };
-
-        db.Subscriptions.Add(newSub);
-        await db.SaveChangesAsync();
         
         WeakReferenceMessenger.Default.Send(new RefreshSubscriptionMessage());
+        WeakReferenceMessenger.Default.Send(new RefreshMailboxMessage());
     }
 
-    private async Task UpdateLastCheckedDate(int mailboxId)
+    private async Task UpdateLastCheckedDateApi(Mailbox mail)
     {
-        await using var db = new AppDbContext();
-        var mailbox = await db.Mailboxes.FindAsync(mailboxId);
-        if (mailbox != null)
-        {
-            mailbox.LastChecked = DateTime.Now;
-            await db.SaveChangesAsync();
+        var session = AuthService.CurrentSession;
+        if (session == null) return;
+
+        try {
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", session.Token);
+            
+            var url = $"{BaseApiUrl}/mail/api/mailboxes/{mail.Id}/";
+            
+            var updateData = new
+            {
+                last_checked = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss")
+            };
+            
+            var json = JsonSerializer.Serialize(updateData);
+            var buffer = Encoding.UTF8.GetBytes(json);
+
+            var content = new ByteArrayContent(buffer);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            
+            var request = new HttpRequestMessage(HttpMethod.Patch, url);
+            request.Version = new Version(1, 0);
+            request.Content = content;
+            
+            await client.SendAsync(request);
+        } catch (Exception ex) {
+            Console.WriteLine($"[EmailService] Не удалось обновить дату проверки: {ex.Message}");
         }
     }
 }
