@@ -1,16 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using Microsoft.EntityFrameworkCore;
-using SubApp.Data;
 using System;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Xamarin.Essentials;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Storage;
 
 namespace SubApp.Scripts;
 
@@ -27,7 +24,9 @@ public static class AuthService
             client.Timeout = TimeSpan.FromSeconds(10);
             client.DefaultRequestHeaders.TransferEncodingChunked = false;
             
-            var url = "http://10.0.2.2:8000/api-token-auth/";
+            var url = DeviceInfo.Platform == DevicePlatform.Android 
+                    ? "http://10.0.2.2:8000/api-token-auth/" 
+                    : "http://127.0.0.1:8000/api-token-auth/";
             
             var loginData = new
             {
@@ -51,8 +50,16 @@ public static class AuthService
             
             CurrentSession = new UserSession(0, username, result.Token);
 
-            await SecureStorage.SetAsync("auth_token", result.Token);
-            await SecureStorage.SetAsync("username", username);
+            if (DeviceInfo.Platform == DevicePlatform.Android)
+            {
+                await SecureStorage.SetAsync("auth_token", result.Token);
+                await SecureStorage.SetAsync("username", username);
+            }
+            else
+            {
+                Preferences.Default.Set("auth_token", result.Token);
+                Preferences.Default.Set("username", username);
+            }
 
             return true;
         }
@@ -67,9 +74,20 @@ public static class AuthService
     {
         try
         {
-            var token = await SecureStorage.GetAsync("auth_token");
-            var username = await SecureStorage.GetAsync("username");
-            var userIdStr = await SecureStorage.GetAsync("current_user_id");
+            string? token, username, userIdStr;
+
+            if (DeviceInfo.Platform == DevicePlatform.Android)
+            {
+                token = await SecureStorage.GetAsync("auth_token");
+                username = await SecureStorage.GetAsync("username");
+                userIdStr = await SecureStorage.GetAsync("current_user_id");
+            }
+            else
+            {
+                token = Preferences.Get("auth_token", null);
+                username = Preferences.Get("username", null);
+                userIdStr = Preferences.Get("current_user_id", null);
+            }
             
             if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(username))
                 return false;
@@ -89,16 +107,34 @@ public static class AuthService
         CurrentSession = new UserSession(0, username, token);
 
         Task.Run(async () => {
-            await SecureStorage.SetAsync("auth_token", token);
-            await SecureStorage.SetAsync("username", username);
+            if (DeviceInfo.Platform == DevicePlatform.Android)
+            {
+                await SecureStorage.SetAsync("auth_token", token);
+                await SecureStorage.SetAsync("username", username);
+            }
+            else
+            {
+                Preferences.Set("auth_token", token);
+                Preferences.Set("username", username);
+            }
         });
     }
 
     public static void Logout()
     {
-        SecureStorage.Remove("auth_token");
-        SecureStorage.Remove("username");
-        SecureStorage.Remove("current_user_id");
+        
+        if (DeviceInfo.Platform == DevicePlatform.Android)
+        {
+            SecureStorage.Remove("auth_token");
+            SecureStorage.Remove("username");
+            SecureStorage.Remove("current_user_id");
+        }
+        else
+        {
+            Preferences.Remove("auth_token");
+            Preferences.Remove("username");
+            Preferences.Remove("current_user_id");
+        }
         CurrentSession = null;
         WeakReferenceMessenger.Default.Send(new OpenOrCloseLoginMessage());
         WeakReferenceMessenger.Default.Send(new UserLoggedInMessage());

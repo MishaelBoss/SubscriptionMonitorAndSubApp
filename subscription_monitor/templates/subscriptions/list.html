@@ -1,0 +1,181 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Список подписок{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="animate__animated animate__fadeInDown">
+            <i class="bi bi-list-ul"></i> Мои подписки
+        </h1>
+        <a href="{% url 'subscriptions:create' %}" class="btn btn-primary animate__animated animate__fadeInRight">
+            <i class="bi bi-plus-circle"></i> Добавить подписку
+        </a>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <select class="form-select animate__animated animate__fadeInLeft" id="statusFilter">
+                <option value="">Все статусы</option>
+                <option value="active">Активные</option>
+                <option value="overdue">Просроченные</option>
+                <option value="paused">Приостановленные</option>
+                <option value="cancelled">Отмененные</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for sub in subscriptions %}
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 subscription-item 
+                {% if sub.is_overdue %}border-danger overdue-card{% elif sub.is_expiring_soon %}border-warning{% endif %}" 
+                style="animation-delay: {{ forloop.counter|add:"0.1" }}s">
+                
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    {% if sub.is_overdue %}
+                        <span class="badge bg-danger" style="font-size: 0.9rem; padding: 0.5rem;">
+                            <i class="bi bi-exclamation-triangle-fill"></i> ПРОСРОЧЕНА
+                        </span>
+                    {% else %}
+                        <span class="badge bg-{{ sub.status_color }}">{{ sub.status_display }}</span>
+                    {% endif %}
+                    
+                    <span class="badge" style="background-color: {{ sub.service.category.color }};">
+                        {{ sub.service.category.icon }} {{ sub.service.category.name }}
+                    </span>
+                </div>
+                
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {% if sub.service.logo %}
+                        <img src="{{ sub.service.logo.url }}" alt="{{ sub.service.name }}" style="height: 30px; width: 30px; object-fit: contain;" class="me-2">
+                        {% endif %}
+                        {{ sub.service.name }}
+                    </h5>
+                    
+                    <p class="card-text">
+                        <span class="display-6">{{ sub.amount }} {{ sub.currency }}</span>
+                        <br>
+                        <small class="text-muted">{{ sub.get_billing_cycle_display }}</small>
+                    </p>
+                    
+                    <!-- Прогресс бар -->
+                    <div class="progress mb-2" style="height: 5px;">
+                        {% if sub.is_overdue %}
+                            <div class="progress-bar bg-danger" role="progressbar" style="width: 100%" 
+                                 title="Просрочена на {{ sub.overdue_days }} дн."></div>
+                        {% else %}
+                            {% with days=sub.days_until_next_payment %}
+                                {% if days and days <= 30 and days > 0 %}
+                                    <div class="progress-bar {% if days <= 3 %}bg-warning{% else %}bg-success{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {% widthratio 30 days 100 %}%;"
+                                         title="Осталось {{ days }} дн.">
+                                    </div>
+                                {% endif %}
+                            {% endwith %}
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Информация о дате платежа -->
+                    <p class="card-text">
+                        <small class="text-muted">
+                            <i class="bi bi-calendar"></i> След. платеж: {{ sub.next_payment_date|date:"d.m.Y" }}
+                        </small>
+                    </p>
+                    
+                    <!-- ИНДИКАТОР ПРОСРОЧКИ -->
+                    {% if sub.is_overdue %}
+                        <div class="alert alert-danger py-2 px-3 mb-2" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <strong>⚠️ ПРОСРОЧКА!</strong><br>
+                            <span>Просрочена на <strong>{{ sub.overdue_days }}</strong> дн.</span>
+                        </div>
+                    {% else %}
+                        {% with days=sub.days_until_next_payment %}
+                            {% if days == 0 %}
+                                <div class="alert alert-warning py-2 px-3 mb-2">
+                                    <i class="bi bi-clock"></i>
+                                    <strong>Платеж сегодня!</strong>
+                                </div>
+                            {% elif days <= 3 and days > 0 %}
+                                <div class="alert alert-warning py-2 px-3 mb-2">
+                                    <i class="bi bi-clock"></i>
+                                    <strong>Осталось {{ days }} дн.</strong>
+                                </div>
+                            {% elif days > 3 %}
+                                <div class="alert alert-info py-2 px-3 mb-2">
+                                    <i class="bi bi-check-circle"></i>
+                                    <strong>Осталось {{ days }} дн.</strong>
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'subscriptions:detail' sub.pk %}" class="btn btn-outline-primary">
+                            <i class="bi bi-eye"></i> Подробнее
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="empty-state">
+                <i class="bi bi-inbox"></i>
+                <h3>У вас пока нет подписок</h3>
+                <p class="text-muted">Начните с добавления первой подписки</p>
+                <a href="{% url 'subscriptions:create' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Добавить подписку
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.getElementById('statusFilter').addEventListener('change', function() {
+    const status = this.value;
+    const url = new URL(window.location.href);
+    if (status) {
+        url.searchParams.set('status', status);
+    } else {
+        url.searchParams.delete('status');
+    }
+    window.location.href = url.toString();
+});
+</script>
+
+<style>
+.overdue-card {
+    box-shadow: 0 0 15px rgba(220, 53, 69, 0.5);
+    border: 2px solid #dc3545 !important;
+    animation: pulse-border 2s infinite;
+}
+
+@keyframes pulse-border {
+    0% {
+        border-color: #dc3545;
+        box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+    }
+    50% {
+        border-color: #ff0000;
+        box-shadow: 0 0 20px rgba(220, 53, 69, 0.7);
+    }
+    100% {
+        border-color: #dc3545;
+        box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+    }
+}
+
+.alert-danger {
+    background-color: rgba(220, 53, 69, 0.2);
+    border: 1px solid #dc3545;
+    color: #fff;
+    font-weight: bold;
+}
+</style>
+{% endblock %}

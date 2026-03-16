@@ -1,0 +1,31 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Отметить оплаченной{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-success">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-check-circle"></i> Отметить подписку как оплаченную</h5>
+            </div>
+            <div class="card-body">
+                <p class="lead">Вы уверены, что хотите отметить подписку как оплаченную?</p>
+                <p><strong>{{ subscription.service.name }}</strong> - {{ subscription.amount }} {{ subscription.currency }}</p>
+                <p>Текущая дата следующего платежа: <strong>{{ subscription.next_payment_date|date:"d.m.Y" }}</strong></p>
+                <p>После подтверждения дата следующего платежа будет перенесена на месяц вперед.</p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Да, оплачено
+                    </button>
+                    <a href="{% url 'subscriptions:detail' subscription.pk %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Отмена
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

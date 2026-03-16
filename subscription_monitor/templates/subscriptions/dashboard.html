@@ -1,0 +1,149 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Дашборд{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <h1 class="mb-4 animate__animated animate__fadeInDown">
+        <i class="bi bi-speedometer2"></i> Дашборд
+    </h1>
+
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <div class="stat-card animate__animated animate__fadeInLeft" style="animation-delay: 0.1s">
+                <div class="card-title">
+                    <i class="bi bi-check-circle"></i> Активных подписок
+                </div>
+                <div class="display-4">{{ active_count|default:"0" }}</div>
+                <small class="text-muted">всего активных</small>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stat-card animate__animated animate__fadeInLeft" style="animation-delay: 0.2s">
+                <div class="card-title">
+                    <i class="bi bi-cash"></i> Расходы в месяц
+                </div>
+                <div class="display-4">{{ total_monthly|floatformat:0 }} ₽</div>
+                <small class="text-muted">≈ {{ total_monthly|floatformat:0|divisibleby:"100"|default:"0" }} ₽ в день</small>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stat-card animate__animated animate__fadeInLeft" style="animation-delay: 0.3s">
+                <div class="card-title">
+                    <i class="bi bi-calendar"></i> Расходы в год
+                </div>
+                <div class="display-4">{{ total_yearly|floatformat:0 }} ₽</div>
+                <small class="text-muted">годовой бюджет</small>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stat-card animate__animated animate__fadeInLeft" style="animation-delay: 0.4s">
+                <div class="card-title">
+                    <i class="bi bi-exclamation-triangle"></i> Скоро списание
+                </div>
+                <div class="display-4">{{ expiring_soon|default:"0" }}</div>
+                <small class="text-muted">в ближайшие 7 дней</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+                <div class="card-header">
+                    <i class="bi bi-credit-card"></i> Последние платежи
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Сервис</th>
+                                <th>Сумма</th>
+                                <th>Дата</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in recent_payments %}
+                            <tr class="animate__animated animate__fadeIn" style="animation-delay: {{ forloop.counter|add:"0.2" }}s">
+                                <td>
+                                    <span class="badge bg-info">{{ payment.subscription.service.name }}</span>
+                                </td>
+                                <td><strong>{{ payment.amount }} {{ payment.currency }}</strong></td>
+                                <td>{{ payment.payment_date|date:"d.m.Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted empty-state">
+                                    <i class="bi bi-inbox"></i>
+                                    <p>Нет платежей</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card animate__animated animate__fadeInUp" style="animation-delay: 0.3s">
+                <div class="card-header">
+                    <i class="bi bi-list-check"></i> Активные подписки
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Сервис</th>
+                                <th>Сумма</th>
+                                <th>След. платеж</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sub in subscriptions %}
+                            {% if sub.status == 'active' %}
+                            <tr class="animate__animated animate__fadeIn" style="animation-delay: {{ forloop.counter|add:"0.3" }}s">
+                                <td>
+                                    <span class="badge bg-info">{{ sub.service.name }}</span>
+                                </td>
+                                <td><strong>{{ sub.amount }} {{ sub.currency }}</strong></td>
+                                <td>{{ sub.next_payment_date|date:"d.m.Y" }}</td>
+                                <td>
+                                    {% if sub.days_until_next_payment < 0 %}
+                                    <span class="badge bg-danger">Просрочено</span>
+                                    {% elif sub.days_until_next_payment <= 3 %}
+                                    <span class="badge bg-warning pulse">{{ sub.days_until_next_payment }} дн.</span>
+                                    {% else %}
+                                    <span class="badge bg-success">{{ sub.days_until_next_payment }} дн.</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted empty-state">
+                                    <i class="bi bi-inbox"></i>
+                                    <p>Нет активных подписок</p>
+                                    <a href="{% url 'subscriptions:create' %}" class="btn btn-primary">
+                                        <i class="bi bi-plus-circle"></i> Добавить подписку
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                    {% if subscriptions %}
+                    <div class="text-center mt-3">
+                        <a href="{% url 'subscriptions:create' %}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Добавить подписку
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

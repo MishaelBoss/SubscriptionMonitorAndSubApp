@@ -1,0 +1,112 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">{{ title }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_service" class="form-label">Сервис</label>
+                            <select name="service" class="form-control" id="id_service" required>
+                                <option value="">Выберите сервис</option>
+                                {% for service in services %}
+                                <option value="{{ service.id }}">{{ service.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_name" class="form-label">Название подписки</label>
+                            <input type="text" name="name" class="form-control" id="id_name" value="{{ form.name.value|default:'' }}">
+                            <small class="form-text text-muted">Оставьте пустым, чтобы использовать название сервиса</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="id_amount" class="form-label">Сумма</label>
+                            <input type="number" name="amount" step="0.01" class="form-control" id="id_amount" value="{{ form.amount.value|default:'' }}" required>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="id_currency" class="form-label">Валюта</label>
+                            <select name="currency" class="form-control" id="id_currency">
+                                <option value="RUB" {% if form.currency.value == 'RUB' %}selected{% endif %}>₽ Рубль</option>
+                                <option value="USD" {% if form.currency.value == 'USD' %}selected{% endif %}>$ Доллар</option>
+                                <option value="EUR" {% if form.currency.value == 'EUR' %}selected{% endif %}>€ Евро</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="id_billing_cycle" class="form-label">Период оплаты</label>
+                            <select name="billing_cycle" class="form-control" id="id_billing_cycle">
+                                <option value="monthly" {% if form.billing_cycle.value == 'monthly' %}selected{% endif %}>Ежемесячно</option>
+                                <option value="quarterly" {% if form.billing_cycle.value == 'quarterly' %}selected{% endif %}>Ежеквартально</option>
+                                <option value="yearly" {% if form.billing_cycle.value == 'yearly' %}selected{% endif %}>Ежегодно</option>
+                                <option value="weekly" {% if form.billing_cycle.value == 'weekly' %}selected{% endif %}>Еженедельно</option>
+                                <option value="custom" {% if form.billing_cycle.value == 'custom' %}selected{% endif %}>Свой период</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_start_date" class="form-label">Дата начала</label>
+                            <input type="date" name="start_date" class="form-control" id="id_start_date" value="{{ form.start_date.value|date:'Y-m-d'|default:'' }}" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_next_payment_date" class="form-label">Дата следующего платежа</label>
+                            <input type="date" name="next_payment_date" class="form-control" id="id_next_payment_date" value="{{ form.next_payment_date.value|date:'Y-m-d'|default:'' }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_status" class="form-label">Статус</label>
+                            <select name="status" class="form-control" id="id_status">
+                                <option value="active" {% if form.status.value == 'active' %}selected{% endif %}>Активна</option>
+                                <option value="paused" {% if form.status.value == 'paused' %}selected{% endif %}>Приостановлена</option>
+                                <option value="trial" {% if form.status.value == 'trial' %}selected{% endif %}>Пробный период</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_billing_cycle_days" class="form-label">Дней в периоде (для своего периода)</label>
+                            <input type="number" name="billing_cycle_days" class="form-control" id="id_billing_cycle_days" value="{{ form.billing_cycle_days.value|default:'30' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" name="auto_renew" class="form-check-input" id="id_auto_renew" {% if form.auto_renew.value %}checked{% endif %}>
+                            <label for="id_auto_renew" class="form-check-label">Автоматическое продление</label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_notes" class="form-label">Заметки</label>
+                        <textarea name="notes" class="form-control" id="id_notes" rows="3">{{ form.notes.value|default:'' }}</textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success">
+                        Сохранить
+                    </button>
+                    <a href="{% url 'subscriptions:list' %}" class="btn btn-secondary">
+                        Отмена
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

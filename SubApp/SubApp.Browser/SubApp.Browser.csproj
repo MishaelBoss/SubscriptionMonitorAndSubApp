@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Avalonia.Browser" />
     <PackageReference Include="MailKit" />
+    <PackageReference Include="Microsoft.Maui.Essentials" />
   </ItemGroup>
 
   <ItemGroup>

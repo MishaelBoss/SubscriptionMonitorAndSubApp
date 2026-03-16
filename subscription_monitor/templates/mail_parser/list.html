@@ -1,0 +1,238 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Почтовые ящики{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="animate__animated animate__fadeInDown">
+            <i class="bi bi-envelope"></i> Почтовые ящики
+        </h1>
+        <a href="{% url 'mail_parser:add' %}" class="btn btn-primary animate__animated animate__fadeInRight">
+            <i class="bi bi-plus-circle"></i> Подключить ящик
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card animate__animated animate__fadeInUp">
+                <div class="card-header">
+                    <i class="bi bi-envelope-paper"></i> Подключенные почтовые ящики
+                </div>
+                <div class="card-body">
+                    {% if mailboxes %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Провайдер</th>
+                                    <th>Статус</th>
+                                    <th>Последняя проверка</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for mailbox in mailboxes %}
+                                <tr class="animate__animated animate__fadeIn" style="animation-delay: {{ forloop.counter|add:"0.1" }}s">
+                                    <td>
+                                        <i class="bi bi-envelope"></i>
+                                        <strong>{{ mailbox.email }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ mailbox.get_provider_display }}</span>
+                                    </td>
+                                    <td>
+                                        {% if mailbox.is_active %}
+                                        <span class="badge bg-success pulse">Активен</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Неактивен</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if mailbox.last_checked %}
+                                        <i class="bi bi-clock"></i>
+                                        {{ mailbox.last_checked|date:"d.m.Y H:i" }}
+                                        {% else %}
+                                        <span class="text-muted">Никогда</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button onclick="startParsing({{ mailbox.pk }})" class="btn btn-sm btn-success" title="Запустить парсинг последних 500 писем">
+                                            <i class="bi bi-play-fill"></i> Старт
+                                        </button>
+                                        <a href="{% url 'mail_parser:check' mailbox.pk %}" class="btn btn-sm btn-info" title="Быстрая проверка (2 письма)">
+                                            <i class="bi bi-lightning"></i> Быстро
+                                        </a>
+                                        <a href="{% url 'mail_parser:edit' mailbox.pk %}" class="btn btn-sm btn-warning" title="Редактировать">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="{% url 'mail_parser:delete' mailbox.pk %}" class="btn btn-sm btn-danger" title="Удалить">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state animate__animated animate__fadeIn">
+                        <i class="bi bi-envelope"></i>
+                        <h3>Нет подключенных ящиков</h3>
+                        <p>Подключите почтовый ящик для автоматического поиска подписок</p>
+                        <a href="{% url 'mail_parser:add' %}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Подключить первый ящик
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно прогресса парсинга -->
+    <div class="modal fade" id="progressModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-gear"></i> Парсинг почты
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="progress mb-3" style="height: 20px;">
+                        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                             role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                            0%
+                        </div>
+                    </div>
+                    
+                    <div id="progressStatus" class="text-center mb-2">
+                        Подготовка к парсингу...
+                    </div>
+                    
+                    <div id="progressDetails" class="small text-muted text-center">
+                        <span id="processedCount">0</span> / <span id="totalCount">0</span> писем обработано
+                    </div>
+                    
+                    <div id="logContainer" class="mt-3 p-2 bg-dark text-light rounded" style="height: 150px; overflow-y: auto; font-family: monospace; font-size: 12px;">
+                        <div id="logMessages"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeModalBtn" disabled>
+                        <i class="bi bi-x-circle"></i> Закрыть
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let progressInterval;
+let currentMailboxId;
+
+function startParsing(mailboxId) {
+    currentMailboxId = mailboxId;
+    
+    // Показываем модальное окно
+    const modal = new bootstrap.Modal(document.getElementById('progressModal'));
+    modal.show();
+    
+    // Сбрасываем прогресс
+    document.getElementById('progressBar').style.width = '0%';
+    document.getElementById('progressBar').innerHTML = '0%';
+    document.getElementById('progressStatus').innerHTML = 'Инициализация парсинга...';
+    document.getElementById('processedCount').innerHTML = '0';
+    document.getElementById('totalCount').innerHTML = '0';
+    document.getElementById('logMessages').innerHTML = '';
+    document.getElementById('closeModalBtn').disabled = true;
+    
+    // Запускаем отслеживание прогресса
+    progressInterval = setInterval(updateProgress, 2000);
+    
+    // Запускаем парсинг
+    fetch(`/mail/${mailboxId}/parse/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('progressStatus').innerHTML = '✅ Парсинг завершен!';
+            document.getElementById('closeModalBtn').disabled = false;
+        } else {
+            document.getElementById('progressStatus').innerHTML = '❌ Ошибка: ' + data.error;
+            document.getElementById('closeModalBtn').disabled = false;
+        }
+    })
+    .catch(error => {
+        document.getElementById('progressStatus').innerHTML = '❌ Ошибка соединения';
+        document.getElementById('closeModalBtn').disabled = false;
+    });
+}
+
+function updateProgress() {
+    fetch(`/mail/${currentMailboxId}/progress/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.total > 0) {
+                const percentage = (data.processed / data.total) * 100;
+                document.getElementById('progressBar').style.width = percentage + '%';
+                document.getElementById('progressBar').innerHTML = Math.round(percentage) + '%';
+                document.getElementById('processedCount').innerHTML = data.processed;
+                document.getElementById('totalCount').innerHTML = data.total;
+                document.getElementById('progressStatus').innerHTML = data.status;
+                
+                // Добавляем новые сообщения в лог
+                if (data.logs && data.logs.length > 0) {
+                    const logContainer = document.getElementById('logMessages');
+                    data.logs.forEach(log => {
+                        const logEntry = document.createElement('div');
+                        logEntry.innerHTML = log;
+                        logContainer.appendChild(logEntry);
+                    });
+                    // Скроллим вниз
+                    document.getElementById('logContainer').scrollTop = document.getElementById('logContainer').scrollHeight;
+                }
+            }
+        })
+        .catch(error => console.error('Error updating progress:', error));
+}
+
+// Очищаем интервал при закрытии модального окна
+document.getElementById('progressModal').addEventListener('hidden.bs.modal', function () {
+    if (progressInterval) {
+        clearInterval(progressInterval);
+    }
+});
+</script>
+
+<style>
+#logContainer {
+    scroll-behavior: smooth;
+}
+
+#logMessages div {
+    border-bottom: 1px solid #333;
+    padding: 2px 0;
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+{% endblock %}

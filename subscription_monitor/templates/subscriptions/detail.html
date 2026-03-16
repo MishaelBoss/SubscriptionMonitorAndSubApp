@@ -1,0 +1,76 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}{{ subscription.service.name }}{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{% url 'subscriptions:list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Назад к списку
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">{{ subscription.service.name }}</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Статус:</strong> 
+                    <span class="badge bg-{% if subscription.status == 'active' %}success{% elif subscription.status == 'paused' %}warning{% else %}danger{% endif %}">
+                        {{ subscription.get_status_display }}
+                    </span>
+                </p>
+                <p><strong>Сумма:</strong> {{ subscription.amount }} {{ subscription.currency }}</p>
+                <p><strong>Период:</strong> {{ subscription.get_billing_cycle_display }}</p>
+                <p><strong>Дата начала:</strong> {{ subscription.start_date }}</p>
+                <p><strong>Следующий платеж:</strong> {{ subscription.next_payment_date }}</p>
+                {% if subscription.notes %}
+                <p><strong>Заметки:</strong><br>{{ subscription.notes|linebreaks }}</p>
+                {% endif %}
+                
+                <div class="d-grid gap-2">
+                    <a href="{% url 'subscriptions:edit' subscription.pk %}" class="btn btn-warning">
+                        <i class="bi bi-pencil"></i> Редактировать
+                    </a>
+                    <a href="{% url 'subscriptions:cancel' subscription.pk %}" class="btn btn-danger">
+                        <i class="bi bi-x-circle"></i> Отменить
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-credit-card"></i> История платежей</h5>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Сумма</th>
+                            <th>Источник</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td>{{ payment.payment_date }}</td>
+                            <td>{{ payment.amount }} {{ payment.currency }}</td>
+                            <td>{{ payment.get_source_display }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">Нет платежей</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

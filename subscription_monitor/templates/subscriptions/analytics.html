@@ -1,0 +1,190 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Аналитика{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <h1 class="mb-4 animate__animated animate__fadeInDown">
+        <i class="bi bi-graph-up"></i> Аналитика
+    </h1>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card animate__animated animate__fadeInLeft">
+                <div class="card-header">
+                    <i class="bi bi-pie-chart"></i> Расходы по категориям
+                </div>
+                <div class="card-body">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card animate__animated animate__fadeInRight">
+                <div class="card-header">
+                    <i class="bi bi-bar-chart"></i> Статистика
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <div class="stat-card p-3">
+                                <small class="text-muted">Всего подписок</small>
+                                <h3>{{ subscriptions|length }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="stat-card p-3">
+                                <small class="text-muted">Активных</small>
+                                <h3>{{ active_count|default:"0" }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="stat-card p-3">
+                                <small class="text-muted">Расходы в месяц</small>
+                                <h3 class="text-success">{{ total_monthly|floatformat:0 }} ₽</h3>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="stat-card p-3">
+                                <small class="text-muted">Расходы в год</small>
+                                <h3 class="text-warning">{{ total_yearly|floatformat:0 }} ₽</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+                <div class="card-header">
+                    <i class="bi bi-table"></i> Детализация по категориям
+                </div>
+                <div class="card-body">
+                    {% if category_data %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Категория</th>
+                                    <th>Количество</th>
+                                    <th>Сумма в месяц</th>
+                                    <th>% от общих расходов</th>
+                                    <th>Прогресс</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cat in category_data %}
+                                <tr class="animate__animated animate__fadeIn" style="animation-delay: {{ forloop.counter|add:"0.2" }}s">
+                                    <td>
+                                        <span class="badge" style="background-color: {{ cat.color }}; color: white;">
+                                            {{ cat.icon }} {{ cat.name }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ cat.count }}</span>
+                                    </td>
+                                    <td><strong>{{ cat.total|floatformat:0 }} ₽</strong></td>
+                                    <td>
+                                        {% if total_monthly > 0 %}
+                                        {% widthratio cat.total total_monthly 100 %}%
+                                        {% else %}
+                                        0%
+                                        {% endif %}
+                                    </td>
+                                    <td style="width: 200px;">
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {% if total_monthly > 0 %}{% widthratio cat.total total_monthly 100 %}{% else %}0{% endif %}%; 
+                                                        background-color: {{ cat.color }};">
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-graph-up"></i>
+                        <h3>Нет данных для анализа</h3>
+                        <p class="text-muted">Добавьте подписки, чтобы увидеть аналитику</p>
+                        <a href="{% url 'subscriptions:create' %}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Добавить подписку
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('categoryChart').getContext('2d');
+    
+    {% if category_data %}
+    const categories = [
+        {% for cat in category_data %}
+        '{{ cat.icon }} {{ cat.name }}',
+        {% endfor %}
+    ];
+    
+    const amounts = [
+        {% for cat in category_data %}
+        {{ cat.total }},
+        {% endfor %}
+    ];
+    
+    const colors = [
+        {% for cat in category_data %}
+        '{{ cat.color }}',
+        {% endfor %}
+    ];
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: categories,
+            datasets: [{
+                data: amounts,
+                backgroundColor: colors,
+                borderWidth: 0,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            cutout: '60%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#e4e6eb',
+                        font: {
+                            family: 'Inter',
+                            size: 12
+                        }
+                    }
+                }
+            },
+            animation: {
+                animateScale: true,
+                animateRotate: true
+            }
+        }
+    });
+    {% else %}
+    ctx.font = "20px Inter";
+    ctx.fillStyle = "#8a8f99";
+    ctx.textAlign = "center";
+    ctx.fillText("Нет данных для отображения", ctx.canvas.width/2, ctx.canvas.height/2);
+    {% endif %}
+});
+</script>
+{% endblock %}

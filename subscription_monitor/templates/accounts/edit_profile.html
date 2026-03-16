@@ -1,0 +1,124 @@
+{% extends 'base.html' %} {% block title %}Редактировать профиль{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header bg-warning">
+        <h5 class="mb-0">
+          <i class="bi bi-pencil-square"></i> Редактировать профиль
+        </h5>
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="id_first_name" class="form-label">Имя</label>
+              <input
+                type="text"
+                name="first_name"
+                class="form-control"
+                id="id_first_name"
+                value="{{ form.first_name.value|default:'' }}"
+              />
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label for="id_last_name" class="form-label">Фамилия</label>
+              <input
+                type="text"
+                name="last_name"
+                class="form-control"
+                id="id_last_name"
+                value="{{ form.last_name.value|default:'' }}"
+              />
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="id_email" class="form-label">Email</label>
+            <input
+              type="email"
+              name="email"
+              class="form-control"
+              id="id_email"
+              value="{{ form.email.value|default:'' }}"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label for="id_avatar" class="form-label">Аватар</label>
+            <input
+              type="file"
+              name="avatar"
+              class="form-control"
+              id="id_avatar"
+            />
+            <div class="form-text">Оставьте пустым, чтобы не менять аватар</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="id_phone" class="form-label">Телефон</label>
+            <input
+              type="text"
+              name="phone"
+              class="form-control"
+              id="id_phone"
+              value="{{ user.profile.phone|default:'' }}"
+            />
+          </div>
+
+          <div class="mb-3">
+            <div class="form-check">
+              <input
+                type="checkbox"
+                name="email_notifications"
+                class="form-check-input"
+                id="id_email_notifications"
+                {%
+                if
+                user.profile.email_notifications
+                %}checked{%
+                endif
+                %}
+              />
+              <label for="id_email_notifications" class="form-check-label"
+                >Получать уведомления по email</label
+              >
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <div class="form-check">
+              <input
+                type="checkbox"
+                name="push_notifications"
+                class="form-check-input"
+                id="id_push_notifications"
+                {%
+                if
+                user.profile.push_notifications
+                %}checked{%
+                endif
+                %}
+              />
+              <label for="id_push_notifications" class="form-check-label"
+                >Получать push-уведомления</label
+              >
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-circle"></i> Сохранить
+          </button>
+          <a href="{% url 'accounts:profile' %}" class="btn btn-secondary">
+            <i class="bi bi-x-circle"></i> Отмена
+          </a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

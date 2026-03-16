@@ -1,0 +1,33 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Удаление почтового ящика{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Подтверждение удаления</h5>
+            </div>
+            <div class="card-body">
+                <p class="lead">Вы уверены, что хотите удалить почтовый ящик?</p>
+                <p><strong>{{ mailbox.email }}</strong></p>
+                <p class="text-danger">
+                    <i class="bi bi-exclamation-circle"></i>
+                    Все связанные с этим ящиком распарсенные письма также будут удалены.
+                </p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Да, удалить
+                    </button>
+                    <a href="{% url 'mail_parser:list' %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Отмена
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

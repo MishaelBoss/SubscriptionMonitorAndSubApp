@@ -22,11 +22,9 @@
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="MailKit" />
-    <PackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" />
-    <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" />
     <PackageReference Include="Microsoft.AspNetCore.Identity" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
-    <PackageReference Include="Xamarin.Essentials" />
+    <PackageReference Include="Microsoft.Maui.Essentials" />
   </ItemGroup>
 
   <ItemGroup>

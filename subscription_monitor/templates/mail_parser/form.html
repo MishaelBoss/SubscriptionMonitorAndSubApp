@@ -1,0 +1,82 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-envelope-plus"></i> {{ title }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_email" class="form-label">Email адрес</label>
+                            <input type="email" name="email" class="form-control" id="id_email" value="{{ form.email.value|default:'' }}" required>
+                            {% if form.email.errors %}
+                            <div class="text-danger">{{ form.email.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_provider" class="form-label">Почтовый провайдер</label>
+                            <select name="provider" class="form-select" id="id_provider">
+                                <option value="gmail" {% if form.provider.value == 'gmail' %}selected{% endif %}>Gmail</option>
+                                <option value="yandex" {% if form.provider.value == 'yandex' %}selected{% endif %}>Yandex</option>
+                                <option value="mailru" {% if form.provider.value == 'mailru' %}selected{% endif %}>Mail.ru</option>
+                                <option value="outlook" {% if form.provider.value == 'outlook' %}selected{% endif %}>Outlook</option>
+                                <option value="other" {% if form.provider.value == 'other' %}selected{% endif %}>Другой</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_imap_server" class="form-label">IMAP сервер</label>
+                            <input type="text" name="imap_server" class="form-control" id="id_imap_server" value="{{ form.imap_server.value|default:'' }}" placeholder="imap.gmail.com">
+                            <small class="form-text text-muted">Оставьте пустым для стандартного сервера</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_imap_port" class="form-label">IMAP порт</label>
+                            <input type="number" name="imap_port" class="form-control" id="id_imap_port" value="{{ form.imap_port.value|default:'993' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_password" class="form-label">Пароль от почты</label>
+                            <input type="password" name="password" class="form-control" id="id_password" value="{{ form.password.value|default:'' }}" required>
+                            <small class="form-text text-muted">{{ form.password.help_text }}</small>
+                            {% if form.password.errors %}
+                            <div class="text-danger">{{ form.password.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_check_frequency" class="form-label">Частота проверки (минуты)</label>
+                            <input type="number" name="check_frequency" class="form-control" id="id_check_frequency" value="{{ form.check_frequency.value|default:'60' }}" min="5">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="is_active" class="form-check-input" id="id_is_active" {% if form.is_active.value %}checked{% endif %}>
+                        <label for="id_is_active" class="form-check-label">Активен (автоматическая проверка)</label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Сохранить
+                    </button>
+                    <a href="{% url 'mail_parser:list' %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Отмена
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
