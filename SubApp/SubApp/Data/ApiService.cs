@@ -33,10 +33,23 @@ public class ApiService
         var url = $"{_baseUrl}/mail/api/emails/";
         return await _http.GetFromJsonAsync<List<ParsedEmail>>(url) ?? [];
     }
+    
+    public async Task<List<ParsedEmail>> GetEmailsForSubscriptionAsync(int subscriptionId)
+    {
+        var url = $"{_baseUrl}/mail/api/emails/?subscription_id={subscriptionId}";
+        return await _http.GetFromJsonAsync<List<ParsedEmail>>(url) ?? [];
+    }
 
     public async Task UpdateSubscriptionAsync(Subscription sub)
     {
         var url = $"{_baseUrl}/subscriptions/api/subscriptions/{sub.Id}/";
         await _http.PutAsJsonAsync(url, sub);
+    }
+    
+    public async Task<bool> DeleteMailboxAsync(int mailboxId)
+    {
+        var url = $"{_baseUrl}/mail/api/mailboxes/{mailboxId}/";
+        var response = await _http.DeleteAsync(url);
+        return response.IsSuccessStatusCode;
     }
 }

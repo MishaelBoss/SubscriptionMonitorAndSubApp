@@ -4,7 +4,6 @@ using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Extensions.DependencyInjection;
-using SubApp.Data;
 using SubApp.Scripts;
 using SubApp.ViewModels;
 using SubApp.ViewModels.Components;
@@ -24,7 +23,6 @@ public partial class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         var services = new ServiceCollection();
-        services.AddDbContext<AppDbContext>();
 
         services.AddTransient<LoginUserControlViewModel>();
         
@@ -52,8 +50,8 @@ public partial class App : Application
                     WeakReferenceMessenger.Default.Send(new OpenOrCloseLoginMessage()));
             }
             
-            var mailWorker = new Services.MailBackgroundWorker();
-            mailWorker.Start();
+            // var mailWorker = new Services.MailBackgroundWorker();
+            // mailWorker.Start();
         });
         
         var culture = new System.Globalization.CultureInfo("ru-RU")

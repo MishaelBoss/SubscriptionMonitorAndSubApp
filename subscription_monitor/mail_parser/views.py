@@ -46,10 +46,36 @@ class ParsedEmailViewSet(viewsets.ModelViewSet):
     serializer_class = ParsedEmailSerializer
 
     def get_queryset(self):
-        return ParsedEmail.objects.filter(mailbox__user=self.request.user)
-
-    def perform_create(self, serializer):
-        serializer.save()
+        queryset = ParsedEmail.objects.filter(mailbox__user=self.request.user)
+        
+        sub_id = self.request.query_params.get('subscription_id')
+        if sub_id:
+            from subscriptions.models import Subscription
+            try:
+                sub = Subscription.objects.get(id=sub_id)
+                from django.db.models import Q
+                queryset = queryset.filter(
+                    Q(processed_subscription_id=sub_id) | 
+                    Q(service_name__icontains=sub.name.strip())
+                )
+            except Subscription.DoesNotExist:
+                pass
+        
+        return queryset.distinct().order_by('-received_date')
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        message_id = serializer.validated_data.get('message_id')
+        
+        obj, created = ParsedEmail.objects.update_or_create(
+            message_id=message_id,
+            defaults=serializer.validated_data
+        )
+        
+        status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        return Response(ParsedEmailSerializer(obj).data, status=status_code)
 
 def update_progress(progress_id, processed, total, found, status):
     """Функция обратного вызова для обновления прогресса"""

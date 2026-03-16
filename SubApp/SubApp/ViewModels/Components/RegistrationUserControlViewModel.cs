@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Maui.Devices;
 
 namespace SubApp.ViewModels.Components;
 
@@ -48,7 +49,9 @@ public partial class RegistrationUserControlViewModel : ViewModelBase
         try
         {
             using var client = new HttpClient();
-            var url = "http://10.0.2.2:8000/accounts/api/register/";
+            var url = DeviceInfo.Platform == DevicePlatform.Android 
+                ? "http://10.0.2.2:8000/accounts/api/register/" 
+                : "http://127.0.0.1:8000/accounts/api/register/";
             
             var regData = new
             {

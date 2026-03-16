@@ -6,7 +6,7 @@ using SubApp.Data;
 
 namespace SubApp.Services;
 
-public class MailBackgroundWorker
+/*public class MailBackgroundWorker
 {
     private readonly EmailProcessingService _processor = new();
     private bool _isRunning;
@@ -49,4 +49,4 @@ public class MailBackgroundWorker
     }
     
     public void Stop() => _isRunning = false;
-}
+}*/

@@ -45,13 +45,20 @@ public class ParsedEmail
     [JsonPropertyName("is_processed")] public bool IsProcessed { get; set; } = false;
 
     [Column("processed_subscription_id")] 
-    [JsonPropertyName("processed_subscription_id")] public int? ProcessedSubscriptionId { get; set; }
+    [JsonPropertyName("processed_subscription")] 
+    public int? ProcessedSubscriptionId { get; set; }
+
+    [Column("payment_date")]
+    [JsonPropertyName("payment_date")] public DateTime? PaymentDate { get; set; }
+
+    [Column("next_payment_date")]
+    [JsonPropertyName("next_payment_date")] public DateTime? NextPaymentDate { get; set; }
 
     [Column("raw_content")] 
     [JsonPropertyName("raw_content")] public string RawContent { get; set; }
 
     [Required] [Column("created_at")] 
-    [JsonPropertyName("created_at")] public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    [JsonPropertyName("created_at")] public DateTime CreatedAt { get; set; }
 
-    [JsonIgnore] public Mailbox? Mailbox { get; set; } 
+    [JsonIgnore] public Mailbox? Mailbox { get; set; }
 }

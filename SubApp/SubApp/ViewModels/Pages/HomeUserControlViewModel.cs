@@ -25,7 +25,7 @@ public partial class HomeUserControlViewModel : ViewModelBase
     [ObservableProperty] private double _totalMonthlyCost;
     [ObservableProperty] private double _totalYearlyCost;
     [ObservableProperty] private string? _nextPaymentSummary;
-
+    
     [RelayCommand]
     public void OpenAddSubscription() 
     {
@@ -61,6 +61,50 @@ public partial class HomeUserControlViewModel : ViewModelBase
         }
     }
 
+    // private async Task LoadRecent(ApiService api)
+    // {
+    //     if (_isRecentLoading) return;
+    //     _isRecentLoading = true;
+    //
+    //     try 
+    //     {
+    //         var allEmails = await api.GetParsedEmailsAsync(); 
+    //         var userId = AuthService.CurrentSession?.Id;
+    //     
+    //         var uniqueEmails = allEmails
+    //             .Where(e => (e.UserId == userId || userId == 0) && !string.IsNullOrEmpty(e.ServiceName)) 
+    //             .GroupBy(e => new { 
+    //                 Day = e.ReceivedDate.Date,
+    //                 Amount = e.Amount, 
+    //                 Name = e.ServiceName.Trim().ToLower()
+    //             }) 
+    //             .Select(g => g.First())
+    //             .OrderByDescending(e => e.ReceivedDate)
+    //             .ToList();
+    //     
+    //         var totalCount = uniqueEmails.Count;
+    //         var recent = uniqueEmails.Take(PageSize).ToList();
+    //         
+    //         Console.WriteLine($"[DEBUG] Всего уникальных писем: {totalCount}, Показано: {recent.Count}");
+    //
+    //         Dispatcher.UIThread.Post(() => 
+    //         {
+    //             CountEmail = totalCount;
+    //             RecentPayments.Clear();
+    //             foreach (var email in recent) RecentPayments.Add(email);
+    //             HasMoreDataEmail = RecentPayments.Count < CountEmail;
+    //         });
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine($"Ошибка LoadRecent: {ex.Message}");
+    //     }
+    //     finally 
+    //     {
+    //         _isRecentLoading = false;
+    //     }
+    // }
+    
     private async Task LoadRecent(ApiService api)
     {
         var allEmails = await api.GetParsedEmailsAsync(); 
@@ -73,7 +117,7 @@ public partial class HomeUserControlViewModel : ViewModelBase
         
         var totalCount = userEmails.Count;
         var recent = userEmails.Take(PageSize).ToList();
-
+        
         Dispatcher.UIThread.Post(() => 
         {
             CountEmail = totalCount;
@@ -103,6 +147,7 @@ public partial class HomeUserControlViewModel : ViewModelBase
             HasMoreDataEmail = RecentPayments.Count < CountEmail;
         });
     }
+
 
     private async Task LoadSubscriptions(ApiService api) 
     {

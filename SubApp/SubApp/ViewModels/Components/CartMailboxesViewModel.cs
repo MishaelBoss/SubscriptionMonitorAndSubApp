@@ -98,15 +98,29 @@ public partial class CartMailboxesViewModel(Mailbox mail) : ViewModelBase
     public void OpenDeleteEmail()
     {
         WeakReferenceMessenger.Default.Send(new OpenOrCloseConfirmDelete(async () => {
-            await using var db = new AppDbContext();
-            var mailbox = await db.Mailboxes.FirstOrDefaultAsync(m => m.Id == mail.Id);
-            if (mailbox != null)
-            {
-                db.Mailboxes.Remove(mailbox);
-                await db.SaveChangesAsync();
-            }
+            var session = AuthService.CurrentSession;
+            if (session == null) return;
 
-            WeakReferenceMessenger.Default.Send(new RefreshMailboxMessage());
+            try
+            {
+                var api = new ApiService(session.Token);
+            
+                bool success = await api.DeleteMailboxAsync(mail.Id);
+
+                if (success)
+                {
+                    WeakReferenceMessenger.Default.Send(new RefreshMailboxMessage());
+                    Console.WriteLine($"[API] Ящик {mail.Id} успешно удален.");
+                }
+                else
+                {
+                    Console.WriteLine("[API] Не удалось удалить ящик на сервере.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[КРИТИЧЕСКАЯ ОШИБКА УДАЛЕНИЯ]: {ex.Message}");
+            }
         }));
     }
 }

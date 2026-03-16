@@ -1,19 +1,16 @@
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using MailKit;
 using MailKit.Net.Imap;
 using MailKit.Search;
-using Microsoft.EntityFrameworkCore;
-using SubApp.Data;
 using SubApp.Models;
 using SubApp.Scripts;
 
 namespace SubApp.Services;
 
-public class MailWatcherService
+/*public class MailWatcherService
 {
     private readonly PeriodicTimer _timer = new(TimeSpan.FromMinutes(10));
     private readonly CancellationTokenSource _cts = new();
@@ -77,4 +74,4 @@ public class MailWatcherService
             Console.WriteLine($"Ошибка авто-проверки {mail.Email}: {ex.Message}");
         }
     }
-}
+}*/
