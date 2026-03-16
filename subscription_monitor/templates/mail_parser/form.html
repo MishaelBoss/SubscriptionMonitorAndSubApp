@@ -15,15 +15,15 @@
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="id_email" class="form-label">Email адрес</label>
-                            <input type="email" name="email" class="form-control" id="id_email" value="{{ form.email.value|default:'' }}" required>
+                            <label for="id_email" class="form-label text-white">Email адрес</label>
+                            <input type="email" name="email" class="form-control" id="id_email" value="{{ form.email.value|default:'' }}" placeholder="example@gmail.com" required>
                             {% if form.email.errors %}
                             <div class="text-danger">{{ form.email.errors }}</div>
                             {% endif %}
                         </div>
                         
                         <div class="col-md-6 mb-3">
-                            <label for="id_provider" class="form-label">Почтовый провайдер</label>
+                            <label for="id_provider" class="form-label text-white">Почтовый провайдер</label>
                             <select name="provider" class="form-select" id="id_provider">
                                 <option value="gmail" {% if form.provider.value == 'gmail' %}selected{% endif %}>Gmail</option>
                                 <option value="yandex" {% if form.provider.value == 'yandex' %}selected{% endif %}>Yandex</option>
@@ -36,42 +36,45 @@
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="id_imap_server" class="form-label">IMAP сервер</label>
+                            <label for="id_imap_server" class="form-label text-white">IMAP сервер</label>
                             <input type="text" name="imap_server" class="form-control" id="id_imap_server" value="{{ form.imap_server.value|default:'' }}" placeholder="imap.gmail.com">
-                            <small class="form-text text-muted">Оставьте пустым для стандартного сервера</small>
+                            <small class="form-text text-white opacity-75">Оставьте пустым для стандартного сервера провайдера</small>
                         </div>
                         
                         <div class="col-md-6 mb-3">
-                            <label for="id_imap_port" class="form-label">IMAP порт</label>
+                            <label for="id_imap_port" class="form-label text-white">IMAP порт</label>
                             <input type="number" name="imap_port" class="form-control" id="id_imap_port" value="{{ form.imap_port.value|default:'993' }}">
                         </div>
                     </div>
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="id_password" class="form-label">Пароль от почты</label>
+                            <label for="id_password" class="form-label text-white">Ключ приложения gmail</label>
                             <input type="password" name="password" class="form-control" id="id_password" value="{{ form.password.value|default:'' }}" required>
-                            <small class="form-text text-muted">{{ form.password.help_text }}</small>
+                            {% if form.password.help_text %}
+                            <small class="form-text text-white opacity-75">{{ form.password.help_text }}</small>
+                            {% endif %}
                             {% if form.password.errors %}
                             <div class="text-danger">{{ form.password.errors }}</div>
                             {% endif %}
                         </div>
                         
                         <div class="col-md-6 mb-3">
-                            <label for="id_check_frequency" class="form-label">Частота проверки (минуты)</label>
+                            <label for="id_check_frequency" class="form-label text-white">Частота проверки (минуты)</label>
                             <input type="number" name="check_frequency" class="form-control" id="id_check_frequency" value="{{ form.check_frequency.value|default:'60' }}" min="5">
+                            <small class="form-text text-white opacity-75">Минимальное значение: 5 минут</small>
                         </div>
                     </div>
                     
                     <div class="mb-3 form-check">
                         <input type="checkbox" name="is_active" class="form-check-input" id="id_is_active" {% if form.is_active.value %}checked{% endif %}>
-                        <label for="id_is_active" class="form-check-label">Активен (автоматическая проверка)</label>
+                        <label for="id_is_active" class="form-check-label text-white">Активен (автоматическая проверка)</label>
                     </div>
                     
                     <button type="submit" class="btn btn-success">
                         <i class="bi bi-check-circle"></i> Сохранить
                     </button>
-                    <a href="{% url 'mail_parser:list' %}" class="btn btn-secondary">
+                    <a href="{% url 'mail_parser:list' %}" class="btn btn-secondary text-white">
                         <i class="bi bi-x-circle"></i> Отмена
                     </a>
                 </form>
