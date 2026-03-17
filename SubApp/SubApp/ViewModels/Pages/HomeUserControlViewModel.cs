@@ -60,50 +60,6 @@ public partial class HomeUserControlViewModel : ViewModelBase
             Console.WriteLine($"КРИТИЧЕСКАЯ ОШИБКА: {ex.Message}");
         }
     }
-
-    // private async Task LoadRecent(ApiService api)
-    // {
-    //     if (_isRecentLoading) return;
-    //     _isRecentLoading = true;
-    //
-    //     try 
-    //     {
-    //         var allEmails = await api.GetParsedEmailsAsync(); 
-    //         var userId = AuthService.CurrentSession?.Id;
-    //     
-    //         var uniqueEmails = allEmails
-    //             .Where(e => (e.UserId == userId || userId == 0) && !string.IsNullOrEmpty(e.ServiceName)) 
-    //             .GroupBy(e => new { 
-    //                 Day = e.ReceivedDate.Date,
-    //                 Amount = e.Amount, 
-    //                 Name = e.ServiceName.Trim().ToLower()
-    //             }) 
-    //             .Select(g => g.First())
-    //             .OrderByDescending(e => e.ReceivedDate)
-    //             .ToList();
-    //     
-    //         var totalCount = uniqueEmails.Count;
-    //         var recent = uniqueEmails.Take(PageSize).ToList();
-    //         
-    //         Console.WriteLine($"[DEBUG] Всего уникальных писем: {totalCount}, Показано: {recent.Count}");
-    //
-    //         Dispatcher.UIThread.Post(() => 
-    //         {
-    //             CountEmail = totalCount;
-    //             RecentPayments.Clear();
-    //             foreach (var email in recent) RecentPayments.Add(email);
-    //             HasMoreDataEmail = RecentPayments.Count < CountEmail;
-    //         });
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         Console.WriteLine($"Ошибка LoadRecent: {ex.Message}");
-    //     }
-    //     finally 
-    //     {
-    //         _isRecentLoading = false;
-    //     }
-    // }
     
     private async Task LoadRecent(ApiService api)
     {
@@ -111,10 +67,12 @@ public partial class HomeUserControlViewModel : ViewModelBase
         var userId = AuthService.CurrentSession?.Id;
         
         var userEmails = allEmails
-            .Where(e => e.UserId == userId || userId == 0) 
+            .Where(e => (e.UserId == userId || userId == 0) && !string.IsNullOrEmpty(e.ServiceName)) 
+            .GroupBy(e => e.MessageId)
+            .Select(g => g.First())
             .OrderByDescending(e => e.ReceivedDate)
             .ToList();
-        
+
         var totalCount = userEmails.Count;
         var recent = userEmails.Take(PageSize).ToList();
         
