@@ -50,9 +50,8 @@ class ParsedEmailViewSet(viewsets.ModelViewSet):
         
         sub_id = self.request.query_params.get('subscription_id')
         if sub_id:
-            from subscriptions.models import Subscription
             try:
-                sub = Subscription.objects.get(id=sub_id)
+                sub = Subscription.objects.get(id=sub_id, user=self.request.user)
                 from django.db.models import Q
                 queryset = queryset.filter(
                     Q(processed_subscription_id=sub_id) | 
@@ -67,15 +66,19 @@ class ParsedEmailViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        message_id = serializer.validated_data.get('message_id')
-        
+        validated_data = serializer.validated_data
+        message_id = validated_data.pop('message_id')
+    
         obj, created = ParsedEmail.objects.update_or_create(
             message_id=message_id,
-            defaults=serializer.validated_data
+            defaults=validated_data
         )
+
+        if obj.service_name: 
+            create_subscription_from_email(obj)
         
         status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
-        return Response(ParsedEmailSerializer(obj).data, status=status_code)
+        return Response(self.get_serializer(obj).data, status=status_code)
 
 def update_progress(progress_id, processed, total, found, status):
     """Функция обратного вызова для обновления прогресса"""
