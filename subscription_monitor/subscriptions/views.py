@@ -28,7 +28,6 @@ class ServiceViewSet(viewsets.ReadOnlyModelViewSet):
 
 @login_required
 def dashboard(request):
-    """Главная страница с дашбордом"""
     subscriptions = Subscription.objects.filter(user=request.user, is_active=True)
     
     total_monthly = 0
@@ -68,12 +67,10 @@ def dashboard(request):
 
 @login_required
 def subscription_list(request):
-    """Список всех подписок"""
     subscriptions = Subscription.objects.filter(
         user=request.user
     ).select_related('service', 'service__category').order_by('next_payment_date')
     
-    # Фильтр по статусу
     status = request.GET.get('status')
     if status == 'overdue':
         subscriptions = [s for s in subscriptions if s.is_overdue]
@@ -87,7 +84,6 @@ def subscription_list(request):
 
 @login_required
 def subscription_detail(request, pk):
-    """Детали подписки"""
     subscription = get_object_or_404(Subscription, pk=pk, user=request.user)
     payments = subscription.payments.all().order_by('-payment_date')[:12]
     days_until = subscription.days_until_next_payment()
@@ -103,14 +99,11 @@ def subscription_detail(request, pk):
 
 @login_required
 def mark_subscription_paid(request, pk):
-    """Отметить подписку как оплаченную"""
     subscription = get_object_or_404(Subscription, pk=pk, user=request.user)
     
     if request.method == 'POST':
-        # Обновляем дату следующего платежа
         new_date = subscription.mark_as_paid()
         
-        # Создаем уведомление
         Notification.objects.create(
             user=request.user,
             subscription=subscription,
@@ -126,7 +119,6 @@ def mark_subscription_paid(request, pk):
 
 @login_required
 def subscription_create(request):
-    """Создание новой подписки"""
     if request.method == 'POST':
         form = SubscriptionForm(request.POST)
         if form.is_valid():
@@ -149,7 +141,6 @@ def subscription_create(request):
 
 @login_required
 def subscription_edit(request, pk):
-    """Редактирование подписки"""
     subscription = get_object_or_404(Subscription, pk=pk, user=request.user)
     
     if request.method == 'POST':
@@ -173,7 +164,6 @@ def subscription_edit(request, pk):
 
 @login_required
 def subscription_delete(request, pk):
-    """Удаление подписки"""
     subscription = get_object_or_404(Subscription, pk=pk, user=request.user)
     
     if request.method == 'POST':
@@ -188,7 +178,6 @@ def subscription_delete(request, pk):
 
 @login_required
 def analytics(request):
-    """Аналитика по подпискам"""
     subscriptions = Subscription.objects.filter(user=request.user, is_active=True)
     
     category_data = []
@@ -236,7 +225,6 @@ def analytics(request):
 
 @login_required
 def notifications(request):
-    """Список уведомлений"""
     notifications = Notification.objects.filter(user=request.user).order_by('-sent_at')
     unread_count = notifications.filter(is_read=False).count()
     
@@ -254,7 +242,6 @@ def notifications(request):
 
 @login_required
 def cancel_subscription(request, pk):
-    """Отмена подписки"""
     subscription = get_object_or_404(Subscription, pk=pk, user=request.user)
     
     if request.method == 'POST':

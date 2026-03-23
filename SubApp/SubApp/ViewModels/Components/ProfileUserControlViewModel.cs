@@ -1,10 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using SubApp.Data;
 using SubApp.Scripts;
 using System;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -57,7 +55,7 @@ public partial class ProfileUserControlViewModel : ViewModelBase
         if (currentUserId == null) return;
 
         var client = new HttpClient();
-        const string url = "http://10.0.2.2:8000/accounts/api/profile/";
+        var url = $"{AppConfig.BaseUrl}/accounts/api/profile/";
         
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", AuthService.CurrentSession?.Token);
         

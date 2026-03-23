@@ -1,14 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Json;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.EntityFrameworkCore;
-using SubApp.Data;
 using SubApp.Models;
 using SubApp.Scripts;
 
@@ -117,7 +113,7 @@ public partial class AddOrEditMailboxUserControlViewModel : ViewModelBase
             client.DefaultRequestHeaders.Authorization = 
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Token", session.Token);
             
-            var baseUrl = "http://10.0.2.2:8000/mail/api/mailboxes/";
+            var baseUrl = $"{AppConfig.BaseUrl}/mail/api/mailboxes/";
             var requestUrl = Mailbox == null ? baseUrl : $"{baseUrl}{Mailbox.Id}/";
             var method = Mailbox == null ? HttpMethod.Post : HttpMethod.Put;
             

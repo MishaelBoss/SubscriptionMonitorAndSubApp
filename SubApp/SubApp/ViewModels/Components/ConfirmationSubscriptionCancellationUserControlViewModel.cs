@@ -37,7 +37,7 @@ public partial class ConfirmationSubscriptionCancellationUserControlViewModel(Su
             var json = JsonSerializer.Serialize(updateData);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await client.PatchAsync($"http://10.0.2.2:8000/subscriptions/api/subscriptions/{sub.Id}/", content);
+            var response = await client.PatchAsync($"{AppConfig.BaseUrl}/subscriptions/api/subscriptions/{sub.Id}/", content);
             
             if (!response.IsSuccessStatusCode)
             {

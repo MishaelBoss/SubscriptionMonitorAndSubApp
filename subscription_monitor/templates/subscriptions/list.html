@@ -60,7 +60,6 @@
                         <small class="text-muted">{{ sub.get_billing_cycle_display }}</small>
                     </p>
                     
-                    <!-- Прогресс бар -->
                     <div class="progress mb-2" style="height: 5px;">
                         {% if sub.is_overdue %}
                             <div class="progress-bar bg-danger" role="progressbar" style="width: 100%" 
@@ -78,14 +77,12 @@
                         {% endif %}
                     </div>
                     
-                    <!-- Информация о дате платежа -->
                     <p class="card-text">
                         <small class="text-muted">
                             <i class="bi bi-calendar"></i> След. платеж: {{ sub.next_payment_date|date:"d.m.Y" }}
                         </small>
                     </p>
                     
-                    <!-- ИНДИКАТОР ПРОСРОЧКИ -->
                     {% if sub.is_overdue %}
                         <div class="alert alert-danger py-2 px-3 mb-2" role="alert">
                             <i class="bi bi-exclamation-triangle-fill me-2"></i>

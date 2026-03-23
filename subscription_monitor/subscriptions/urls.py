@@ -19,6 +19,5 @@ urlpatterns = [
     path('<int:pk>/mark-paid/', views.mark_subscription_paid, name='mark_paid'),
     path('analytics/', views.analytics, name='analytics'),
     path('notifications/', views.notifications, name='notifications'),
-
     path('api/', include(router.urls)),
 ]

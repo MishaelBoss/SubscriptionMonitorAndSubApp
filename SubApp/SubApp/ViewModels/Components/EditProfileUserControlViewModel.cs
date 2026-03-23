@@ -6,7 +6,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
-using SubApp.Data;
 using SubApp.Models;
 using SubApp.Scripts;
 
@@ -23,7 +22,7 @@ public partial class EditProfileUserControlViewModel : ViewModelBase
     [ObservableProperty] private bool _emailNotifications;
     [ObservableProperty] private bool _pushNotifications;
     
-    private readonly string _apiUrl = "http://10.0.2.2:8000/accounts/api/profile/";
+    private readonly string _apiUrl = $"{AppConfig.BaseUrl}/accounts/api/profile/";
 
     public bool IsActiveConfirmButton
         => !string.IsNullOrEmpty(UserName);

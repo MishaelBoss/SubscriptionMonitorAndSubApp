@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using SubApp.Data;
 using SubApp.Models;
 using SubApp.Scripts;
 using System;
@@ -43,7 +42,7 @@ public partial class AddOrEditNewSubscriptionUserControlViewModel : ViewModelBas
     [ObservableProperty] private bool _automaticRenewal = true;
     [ObservableProperty] private string _notes = string.Empty;
     
-    private readonly string _baseUrl = "http://10.0.2.2:8000/subscriptions/api/subscriptions/";
+    private readonly string _baseUrl = $"{AppConfig.BaseUrl}/subscriptions/api/subscriptions/";
     
     public string ConfirmButtonText
         => Sub == null ? "Добавить" : "Сохранить";
@@ -81,7 +80,7 @@ public partial class AddOrEditNewSubscriptionUserControlViewModel : ViewModelBas
         try
         {
             using var client = new HttpClient(); 
-            const string url = "http://10.0.2.2:8000/subscriptions/api/";
+            var url = $"{AppConfig.BaseUrl}/subscriptions/api/";
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", AuthService.CurrentSession?.Token);
             
             var response = await client.GetFromJsonAsync<List<Service>>(url + "services/");

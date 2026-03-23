@@ -10,7 +10,6 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('subscriptions/', include('subscriptions.urls')),
     path('mail/', include('mail_parser.urls')),
-    # Редирект с главной на subscriptions
     path('', RedirectView.as_view(url='/subscriptions/', permanent=False)),
     path('api-token-auth/', views.obtain_auth_token),
 ]

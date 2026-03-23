@@ -20,7 +20,6 @@ from .serializers import ParsedEmailSerializer
 
 logger = logging.getLogger(__name__)
 
-# Глобальный словарь для хранения прогресса парсинга
 progress_data = {}
 notification_queues = {}
 
@@ -81,7 +80,6 @@ class ParsedEmailViewSet(viewsets.ModelViewSet):
         return Response(self.get_serializer(obj).data, status=status_code)
 
 def update_progress(progress_id, processed, total, found, status):
-    """Функция обратного вызова для обновления прогресса"""
     if progress_id in progress_data:
         progress_data[progress_id]['processed'] = processed
         progress_data[progress_id]['total'] = total
@@ -90,7 +88,6 @@ def update_progress(progress_id, processed, total, found, status):
 
 @login_required
 def mailbox_list(request):
-    """Список подключенных почтовых ящиков"""
     mailboxes = Mailbox.objects.filter(user=request.user)
     
     user_id = request.user.id
@@ -103,7 +100,6 @@ def mailbox_list(request):
 
 @login_required
 def mailbox_add(request):
-    """Подключение нового почтового ящика"""
     if request.method == 'POST':
         form = MailboxForm(request.POST)
         if form.is_valid():
@@ -135,7 +131,6 @@ def mailbox_add(request):
 
 @login_required
 def mailbox_parse(request, pk):
-    """Запуск парсинга по кнопке Старт"""
     mailbox = get_object_or_404(Mailbox, pk=pk, user=request.user)
     
     progress_data[pk] = {
@@ -155,7 +150,6 @@ def mailbox_parse(request, pk):
 
 @login_required
 def get_progress(request, pk):
-    """Получение реального прогресса парсинга"""
     mailbox = get_object_or_404(Mailbox, pk=pk, user=request.user)
     
     progress = progress_data.get(pk, {
@@ -180,13 +174,11 @@ def get_progress(request, pk):
 
 @login_required
 def clear_progress(request, pk):
-    """Очистка прогресса после завершения"""
     if pk in progress_data:
         del progress_data[pk]
     return JsonResponse({'success': True})
 
 def run_parsing(user_id, mailbox_id):
-    """Функция парсинга, выполняемая в фоновом потоке"""
     from django.contrib.auth.models import User
     
     try:
@@ -205,7 +197,6 @@ def run_parsing(user_id, mailbox_id):
         subscription_count = 0
         new_notifications = []
         
-        # Создаем подписки из найденных с уникальными ID
         for sub_info in found_subscriptions:
             try:
                 unique_id = f"sub_{sub_info['service']}_{sub_info['date']}_{uuid.uuid4().hex[:8]}"
@@ -248,7 +239,6 @@ def run_parsing(user_id, mailbox_id):
                 logger.error(f"Error creating subscription from found: {e}")
                 continue
         
-        # Обрабатываем все результаты
         for i, email_data in enumerate(results):
             try:
                 if not email_data:
@@ -311,7 +301,6 @@ def run_parsing(user_id, mailbox_id):
             progress_data[mailbox_id]['status'] = f'❌ Ошибка: {str(e)}'
 
 def create_subscription_from_email(parsed_email, email_data=None):
-    """Создание подписки из распарсенного письма с учетом просрочки"""
     try:
         user = parsed_email.mailbox.user
         
@@ -331,7 +320,6 @@ def create_subscription_from_email(parsed_email, email_data=None):
             }
         )
         
-        # Определяем статус подписки
         is_overdue = False
         requires_restore = False
         payment_date = parsed_email.payment_date
@@ -340,16 +328,13 @@ def create_subscription_from_email(parsed_email, email_data=None):
             is_overdue = email_data.get('is_overdue', False)
             requires_restore = email_data.get('requires_restore', False)
         
-        # Проверяем существующую подписку
         existing_subscription = Subscription.objects.filter(
             user=user,
             service=service,
         ).first()
         
-        # Рассчитываем следующую дату платежа
         today = timezone.now().date()
         
-        # Для просроченных подписок устанавливаем дату на сегодня
         if is_overdue:
             next_payment = today
             logger.info(f"⚠️ Просроченная подписка {service_name}: устанавливаем дату {next_payment}")
@@ -359,13 +344,11 @@ def create_subscription_from_email(parsed_email, email_data=None):
             next_payment = today
         
         if existing_subscription:
-            # Обновляем существующую подписку
             existing_subscription.amount = parsed_email.amount
             existing_subscription.next_payment_date = next_payment
             existing_subscription.status = 'active'
             existing_subscription.save()
             
-            # Создаем платеж
             Payment.objects.create(
                 subscription=existing_subscription,
                 amount=parsed_email.amount,
@@ -386,7 +369,6 @@ def create_subscription_from_email(parsed_email, email_data=None):
             return existing_subscription
             
         else:
-            # Создаем новую подписку
             subscription = Subscription.objects.create(
                 user=user,
                 service=service,
@@ -399,7 +381,6 @@ def create_subscription_from_email(parsed_email, email_data=None):
                 billing_cycle='monthly',
             )
             
-            # Создаем платеж
             Payment.objects.create(
                 subscription=subscription,
                 amount=parsed_email.amount,
@@ -429,7 +410,6 @@ def create_subscription_from_email(parsed_email, email_data=None):
 
 @login_required
 def mailbox_check_recent(request, pk):
-    """Быстрая проверка последних 2 писем"""
     mailbox = get_object_or_404(Mailbox, pk=pk, user=request.user)
     
     try:
@@ -501,7 +481,6 @@ def mailbox_check_recent(request, pk):
     return redirect('mail_parser:list')
 
 def send_email_notification(request, email_info):
-    """Отправка уведомления о письме"""
     if not email_info:
         return
     
@@ -535,7 +514,6 @@ def send_email_notification(request, email_info):
 
 @login_required
 def mailbox_edit(request, pk):
-    """Редактирование почтового ящика"""
     mailbox = get_object_or_404(Mailbox, pk=pk, user=request.user)
     
     if request.method == 'POST':
@@ -555,7 +533,6 @@ def mailbox_edit(request, pk):
 
 @login_required
 def mailbox_delete(request, pk):
-    """Удаление почтового ящика"""
     mailbox = get_object_or_404(Mailbox, pk=pk, user=request.user)
     
     if request.method == 'POST':
@@ -570,7 +547,6 @@ def mailbox_delete(request, pk):
 
 @login_required
 def parsed_emails(request):
-    """Список распарсенных писем"""
     emails = ParsedEmail.objects.filter(mailbox__user=request.user).order_by('-received_date')
     context = {
         'emails': emails,
@@ -579,6 +555,5 @@ def parsed_emails(request):
 
 @login_required
 def clear_session_data(request):
-    """Очистка данных сессии"""
     messages.success(request, 'История проверки очищена')
     return redirect('mail_parser:emails')

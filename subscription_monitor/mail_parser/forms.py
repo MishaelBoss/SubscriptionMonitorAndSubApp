@@ -28,6 +28,4 @@ class MailboxForm(forms.ModelForm):
         
     def clean_password(self):
         password = self.cleaned_data.get('password')
-        # Здесь должно быть шифрование пароля
-        # В реальном проекте используйте django-cryptography или Fernet
-        return password  # Пока возвращаем как есть
+        return password

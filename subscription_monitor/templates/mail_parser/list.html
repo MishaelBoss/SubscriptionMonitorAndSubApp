@@ -91,7 +91,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно прогресса парсинга -->
     <div class="modal fade" id="progressModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -143,11 +142,9 @@ let currentMailboxId;
 function startParsing(mailboxId) {
     currentMailboxId = mailboxId;
     
-    // Показываем модальное окно
     const modal = new bootstrap.Modal(document.getElementById('progressModal'));
     modal.show();
     
-    // Сбрасываем прогресс
     document.getElementById('progressBar').style.width = '0%';
     document.getElementById('progressBar').innerHTML = '0%';
     document.getElementById('progressStatus').innerHTML = 'Инициализация парсинга...';
@@ -156,10 +153,8 @@ function startParsing(mailboxId) {
     document.getElementById('logMessages').innerHTML = '';
     document.getElementById('closeModalBtn').disabled = true;
     
-    // Запускаем отслеживание прогресса
     progressInterval = setInterval(updateProgress, 2000);
     
-    // Запускаем парсинг
     fetch(`/mail/${mailboxId}/parse/`, {
         method: 'POST',
         headers: {
@@ -195,7 +190,6 @@ function updateProgress() {
                 document.getElementById('totalCount').innerHTML = data.total;
                 document.getElementById('progressStatus').innerHTML = data.status;
                 
-                // Добавляем новые сообщения в лог
                 if (data.logs && data.logs.length > 0) {
                     const logContainer = document.getElementById('logMessages');
                     data.logs.forEach(log => {
@@ -203,7 +197,6 @@ function updateProgress() {
                         logEntry.innerHTML = log;
                         logContainer.appendChild(logEntry);
                     });
-                    // Скроллим вниз
                     document.getElementById('logContainer').scrollTop = document.getElementById('logContainer').scrollHeight;
                 }
             }
@@ -211,7 +204,6 @@ function updateProgress() {
         .catch(error => console.error('Error updating progress:', error));
 }
 
-// Очищаем интервал при закрытии модального окна
 document.getElementById('progressModal').addEventListener('hidden.bs.modal', function () {
     if (progressInterval) {
         clearInterval(progressInterval);

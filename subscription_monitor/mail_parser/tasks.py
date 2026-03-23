@@ -10,11 +10,9 @@ logger = logging.getLogger(__name__)
 
 @shared_task
 def check_all_mailboxes():
-    """Периодическая проверка всех активных почтовых ящиков"""
     mailboxes = Mailbox.objects.filter(is_active=True)
     
     for mailbox in mailboxes:
-        # Проверяем, не проверяли ли ящик слишком часто
         if mailbox.last_checked:
             next_check = mailbox.last_checked + timedelta(minutes=mailbox.check_frequency)
             if timezone.now() < next_check:
@@ -26,7 +24,6 @@ def check_all_mailboxes():
 
 @shared_task
 def check_mailbox(mailbox_id):
-    """Проверка конкретного почтового ящика"""
     try:
         mailbox = Mailbox.objects.get(id=mailbox_id, is_active=True)
     except Mailbox.DoesNotExist:
@@ -41,11 +38,9 @@ def check_mailbox(mailbox_id):
     
     created_count = 0
     for email_data in parsed_emails:
-        # Проверяем, не обрабатывали ли уже это письмо
         if ParsedEmail.objects.filter(message_id=email_data.get('uid')).exists():
             continue
         
-        # Создаем запись о распарсенном письме
         parsed = ParsedEmail.objects.create(
             mailbox=mailbox,
             message_id=email_data.get('uid', ''),
@@ -61,7 +56,6 @@ def check_mailbox(mailbox_id):
         
         created_count += 1
         
-        # Если есть сумма и название сервиса, пробуем создать подписку
         if parsed.amount and parsed.service_name:
             process_parsed_email.delay(parsed.id)
     
@@ -73,7 +67,6 @@ def check_mailbox(mailbox_id):
 
 @shared_task
 def process_parsed_email(parsed_email_id):
-    """Обработка распарсенного письма - создание подписки или платежа"""
     try:
         parsed = ParsedEmail.objects.get(id=parsed_email_id, is_processed=False)
     except ParsedEmail.DoesNotExist:
@@ -82,7 +75,6 @@ def process_parsed_email(parsed_email_id):
     try:
         user = parsed.mailbox.user
         
-        # Ищем или создаем сервис
         service, created = Service.objects.get_or_create(
             name__icontains=parsed.service_name,
             defaults={
@@ -91,7 +83,6 @@ def process_parsed_email(parsed_email_id):
             }
         )
         
-        # Ищем существующую активную подписку
         subscription = Subscription.objects.filter(
             user=user,
             service=service,
@@ -99,7 +90,6 @@ def process_parsed_email(parsed_email_id):
         ).first()
         
         if not subscription and parsed.amount:
-            # Создаем новую подписку
             from datetime import timedelta
             next_payment = parsed.next_payment_date or (parsed.payment_date + timedelta(days=30)) if parsed.payment_date else timezone.now().date() + timedelta(days=30)
             
@@ -116,7 +106,6 @@ def process_parsed_email(parsed_email_id):
             )
             logger.info(f"Created new subscription: {subscription}")
         
-        # Создаем платеж, если есть подписка
         if subscription and parsed.amount:
             payment = Payment.objects.create(
                 subscription=subscription,

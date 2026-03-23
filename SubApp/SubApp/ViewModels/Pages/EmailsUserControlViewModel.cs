@@ -1,18 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.EntityFrameworkCore;
 using SubApp.Data;
-using SubApp.Models;
 using SubApp.Scripts;
 using SubApp.ViewModels.Components;
 
@@ -51,32 +45,25 @@ namespace SubApp.ViewModels.Pages
         private async Task LoadEmailsAsync()
         {
             var session = AuthService.CurrentSession;
-            if(session == null) return;
+            if(session == null) {
+                Console.WriteLine("DEBUG: Сессия пустая, загрузка отменена.");
+                return;
+            }
             
             try
             {
-                using var client = new HttpClient();
-                client.DefaultRequestHeaders.Authorization = 
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Token", session.Token);
-        
-                var url = "http://10.0.2.2:8000/mail/api/mailboxes/";
-                var content = await client.GetStringAsync(url);
-        
-                var cleanJson = content.Trim().Trim('\uFEFF');
+                var api = new ApiService(session.Token);
                 
-                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                var mailboxes = JsonSerializer.Deserialize<List<Mailbox>>(cleanJson, options);
-                if (mailboxes != null)
+                var mailboxes = await api.GetMailBoxAsync();
+
+                Dispatcher.UIThread.Post(() =>
                 {
-                    Dispatcher.UIThread.Post(() =>
+                    CartMailboxesViewModels.Clear();
+                    foreach (var mailbox in mailboxes)
                     {
-                        CartMailboxesViewModels.Clear();
-                        foreach (var mailbox in mailboxes)
-                        {
-                            CartMailboxesViewModels.Add(new CartMailboxesViewModel(mailbox));
-                        }
-                    });
-                }
+                        CartMailboxesViewModels.Add(new CartMailboxesViewModel(mailbox));
+                    }
+                });
             }
             catch (Exception ex)
             {

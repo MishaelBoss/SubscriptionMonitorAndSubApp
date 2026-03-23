@@ -5,7 +5,6 @@ from datetime import timedelta
 import uuid
 
 class Category(models.Model):
-    """Категория подписок"""
     name = models.CharField(max_length=100, unique=True)
     icon = models.CharField(max_length=50, default="📦")
     color = models.CharField(max_length=20, default="#6c757d")
@@ -19,7 +18,6 @@ class Category(models.Model):
         return self.name
 
 class Service(models.Model):
-    """Сервис/платформа подписки"""
     name = models.CharField(max_length=200)
     logo = models.ImageField(upload_to='service_logos/', null=True, blank=True)
     website = models.URLField(max_length=500, blank=True)
@@ -34,7 +32,6 @@ class Service(models.Model):
         return self.name
 
 class Subscription(models.Model):
-    """Подписка пользователя"""
     BILLING_CYCLE_CHOICES = [
         ('monthly', 'Ежемесячно'),
         ('quarterly', 'Ежеквартально'),
@@ -88,7 +85,6 @@ class Subscription(models.Model):
         return f"{self.user.username} - {self.service.name}{overdue}"
     
     def days_until_next_payment(self):
-        """Дней до следующего платежа (отрицательное значение = просрочка)"""
         if self.next_payment_date:
             delta = self.next_payment_date - timezone.now().date()
             return delta.days
@@ -96,7 +92,6 @@ class Subscription(models.Model):
     
     @property
     def is_overdue(self):
-        """Проверка, просрочена ли подписка"""
         if self.status != 'active':
             return False
         if self.next_payment_date:
@@ -105,7 +100,6 @@ class Subscription(models.Model):
     
     @property
     def overdue_days(self):
-        """Количество дней просрочки"""
         if self.is_overdue:
             delta = timezone.now().date() - self.next_payment_date
             return delta.days
@@ -113,14 +107,12 @@ class Subscription(models.Model):
     
     @property
     def status_display(self):
-        """Отображение статуса с учетом просрочки"""
         if self.is_overdue:
             return "ПРОСРОЧЕНА"
         return self.get_status_display()
     
     @property
     def status_color(self):
-        """Цвет статуса для UI"""
         if self.is_overdue:
             return "danger"
         status_colors = {
@@ -133,14 +125,12 @@ class Subscription(models.Model):
         return status_colors.get(self.status, 'secondary')
     
     def is_expiring_soon(self, days=7):
-        """Проверка, истекает ли подписка скоро"""
         if self.next_payment_date and self.status == 'active' and not self.is_overdue:
             delta = self.next_payment_date - timezone.now().date()
             return 0 <= delta.days <= days
         return False
     
     def calculate_monthly_cost(self):
-        """Расчет ежемесячной стоимости"""
         if self.billing_cycle == 'monthly':
             return float(self.amount)
         elif self.billing_cycle == 'yearly':
@@ -154,7 +144,6 @@ class Subscription(models.Model):
         return float(self.amount)
     
     def mark_as_paid(self, payment_date=None):
-        """Отметить подписку как оплаченную"""
         if not payment_date:
             payment_date = timezone.now().date()
         
@@ -173,7 +162,6 @@ class Subscription(models.Model):
         return self.next_payment_date
 
 class Payment(models.Model):
-    """Платеж по подписке"""
     subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, related_name='payments')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=3, default='RUB')
@@ -196,7 +184,6 @@ class Payment(models.Model):
         return f"{self.subscription} - {self.amount} {self.currency} ({self.payment_date})"
 
 class UsageData(models.Model):
-    """Данные об использовании подписки"""
     subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, related_name='usage_data')
     date = models.DateField(auto_now_add=True)
     last_used = models.DateTimeField(null=True, blank=True)
@@ -211,7 +198,6 @@ class UsageData(models.Model):
         return f"{self.subscription} - {self.date}"
 
 class Notification(models.Model):
-    """Уведомление для пользователя"""
     NOTIFICATION_TYPES = [
         ('upcoming', 'Предстоящий платеж'),
         ('overdue', 'Просрочка платежа'),

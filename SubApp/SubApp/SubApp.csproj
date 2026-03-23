@@ -4,6 +4,8 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <ApplicationId>com.redmer.redmer</ApplicationId>
+    <ApplicationTitle>SubApp</ApplicationTitle>
   </PropertyGroup>
   
   <ItemGroup>

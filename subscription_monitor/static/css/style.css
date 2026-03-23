@@ -307,7 +307,6 @@ body {
     vertical-align: middle;
 }
 
-/* ===== Формы ===== */
 .form-control, .form-select {
     background: var(--bg-secondary);
     border: 2px solid var(--border-color);
@@ -534,7 +533,6 @@ body {
     border-color: var(--accent-primary);
 }
 
-/* ===== Модальные окна ===== */
 .modal-content {
     background: var(--bg-card);
     border: 1px solid var(--border-color);

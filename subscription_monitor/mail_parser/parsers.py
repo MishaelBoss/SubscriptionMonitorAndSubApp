@@ -4,21 +4,17 @@ import re
 from email.utils import parsedate_to_datetime
 from datetime import datetime, date, timedelta
 import logging
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 import time
 from django.utils import timezone
-import base64
-import quopri
 
 logger = logging.getLogger(__name__)
 
 def decode_mime_string(encoded_str):
-    """Декодирование MIME строк (например, =?utf-8?b?...?=)"""
     if not encoded_str or '=?' not in encoded_str:
         return encoded_str
     
     try:
-        # Пробуем декодировать через email.header
         from email.header import decode_header
         decoded_parts = []
         for part, encoding in decode_header(encoded_str):
@@ -33,9 +29,7 @@ def decode_mime_string(encoded_str):
     except:
         return encoded_str
 
-class EmailParser:
-    """Парсер email сообщений для поиска подписок"""
-    
+class EmailParser:    
     def __init__(self, mailbox):
         self.mailbox = mailbox
         self.connection = None
@@ -44,15 +38,12 @@ class EmailParser:
         self.found_subscriptions = 0
         self.subscriptions_found = []
         
-        # Парсим письма за последние 6 месяцев
         self.months_to_parse = 6
         self.max_emails_to_parse = 500
         
-        # ID для отслеживания прогресса
         self.progress_id = None
         self.progress_callback = None
         
-        # Ключевые слова для поиска подписок
         self.subscription_keywords = [
             'subscription', 'подписк', 'ежемесячная', 'ежегодная',
             'payment', 'платеж', 'списание', 'автоплатеж',
@@ -61,13 +52,11 @@ class EmailParser:
             'renew', 'продлен', 'автоматическое продление',
             'ваш счет', 'оплата подписки', 'списание средств',
             'prime', 'premium', 'plus', 'pro', 'fizovod', 'fizo vod',
-            # Слова для определения просрочки
             'остановлен', 'приостановлен', 'заблокирован', 'деактивирован',
             'просрочен', 'истек', 'закончился', 'требует оплаты',
             'восстановить', 'разблокировать', 'активировать', 'zero+'
         ]
         
-        # Слова для ИСКЛЮЧЕНИЯ (НЕ подписки)
         self.exclude_keywords = [
             'uptimerobot', 'monitor', 'мониторинг', 'alert', 'оповещение',
             'down', 'авария', 'сбой', 'ошибка', 'error', 'fail',
@@ -83,7 +72,6 @@ class EmailParser:
             'statement', 'выписка', 'balance', 'баланс', 'transaction', 'транзакция'
         ]
         
-        # Известные сервисы подписок
         self.known_services = {
             'netflix': 'Netflix',
             'yandex plus': 'Яндекс.Плюс',
@@ -119,12 +107,10 @@ class EmailParser:
         }
     
     def set_progress_callback(self, progress_id, callback):
-        """Установка callback для обновления прогресса"""
         self.progress_id = progress_id
         self.progress_callback = callback
     
     def update_progress(self):
-        """Обновление прогресса через callback"""
         if self.progress_callback and self.progress_id:
             percentage = (self.processed / self.total_emails) * 100 if self.total_emails > 0 else 0
             self.progress_callback(
@@ -136,7 +122,6 @@ class EmailParser:
             )
     
     def connect(self):
-        """Подключение к почтовому серверу"""
         try:
             server = self.mailbox.imap_server or self._get_default_server()
             self.connection = imaplib.IMAP4_SSL(server, self.mailbox.imap_port)
@@ -165,7 +150,6 @@ class EmailParser:
                 pass
     
     def get_emails_since_date(self, since_date):
-        """Получить письма с определенной даты"""
         if not self.connect():
             return []
         
@@ -243,7 +227,6 @@ class EmailParser:
             self.disconnect()
     
     def fetch_email(self, uid):
-        """Получить письмо с повторными попытками"""
         max_retries = 3
         for attempt in range(max_retries):
             try:
@@ -261,7 +244,6 @@ class EmailParser:
         return None
     
     def reconnect(self):
-        """Переподключение"""
         try:
             self.disconnect()
             time.sleep(1)
@@ -270,7 +252,6 @@ class EmailParser:
             pass
     
     def parse_all_emails(self, months=6):
-        """Парсинг писем за последние N месяцев"""
         since_date = datetime.now().date() - timedelta(days=30 * months)
         logger.info(f"📅 Парсим письма за последние {months} месяцев (с {since_date})")
         self.subscriptions_found = []
@@ -278,7 +259,6 @@ class EmailParser:
         return results, self.subscriptions_found
     
     def is_subscription_email(self, subject, from_email, body):
-        """Проверка на подписку"""
         text = f"{subject} {from_email} {body}".lower()
         
         for exclude in self.exclude_keywords:
@@ -307,7 +287,6 @@ class EmailParser:
         return False
     
     def parse_amount(self, text):
-        """Извлечение суммы"""
         patterns = [
             r'(\d+[.,]\d{2})\s*[₽$€]',
             r'(\d+)\s*[₽$€]',
@@ -335,8 +314,6 @@ class EmailParser:
         return None
     
     def parse_service_name(self, subject, from_email, body):
-        """Определение сервиса с декодированием"""
-        # Декодируем subject и from_email
         decoded_subject = decode_mime_string(subject)
         decoded_from = decode_mime_string(from_email)
         
@@ -361,7 +338,6 @@ class EmailParser:
         return None
     
     def parse_date(self, text):
-        """Извлечение даты"""
         patterns = [
             r'(\d{2})[./](\d{2})[./](\d{4})',
             r'до (\d{2})[./](\d{2})[./](\d{4})',
@@ -386,7 +362,6 @@ class EmailParser:
         return None
     
     def extract_text_from_email(self, msg):
-        """Извлечение текста"""
         body_text = ""
         
         if msg.is_multipart():
@@ -419,7 +394,6 @@ class EmailParser:
         return body_text
     
     def process_email(self, msg):
-        """Обработка письма"""
         try:
             result = {
                 'subject': '',
@@ -434,7 +408,6 @@ class EmailParser:
                 'requires_restore': False,
             }
             
-            # Декодируем заголовки
             raw_subject = msg.get('Subject', '')
             raw_from = msg.get('From', '')
             
@@ -499,7 +472,6 @@ class EmailParser:
             return None
     
     def run_parse(self, limit=2):
-        """Быстрая проверка последних писем"""
         if not self.connect():
             return []
         

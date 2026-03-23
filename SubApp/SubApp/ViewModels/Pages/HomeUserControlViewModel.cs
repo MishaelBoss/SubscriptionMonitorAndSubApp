@@ -12,7 +12,8 @@ using Avalonia.Threading;
 
 namespace SubApp.ViewModels.Pages;
 
-public partial class HomeUserControlViewModel : ViewModelBase
+public partial class HomeUserControlViewModel : ViewModelBase, 
+    IRecipient<UserLoggedInMessage>
 {
     [ObservableProperty] private ObservableCollection<Subscription> _subscriptions = [];
     [ObservableProperty] private ObservableCollection<ParsedEmail> _recentPayments = [];
@@ -34,8 +35,23 @@ public partial class HomeUserControlViewModel : ViewModelBase
 
     public HomeUserControlViewModel()
     {
-        // Task.Run(async () => { await InitializationAsync(); });
-        _ = InitializationAsync();
+        WeakReferenceMessenger.Default.Register(this);
+        _ = RefreshDataAsync();
+    }
+
+    public void Receive(UserLoggedInMessage message)
+    {
+        _ = RefreshDataAsync();
+    }
+
+    private async Task RefreshDataAsync()
+    {
+        Dispatcher.UIThread.Post(() => {
+            RecentPayments.Clear();
+            Subscriptions.Clear();
+        });
+    
+        await InitializationAsync();
     }
 
     private async Task InitializationAsync()

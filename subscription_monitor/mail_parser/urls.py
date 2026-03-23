@@ -18,7 +18,6 @@ urlpatterns = [
     path('<int:pk>/progress/', views.get_progress, name='progress'),
     path('emails/', views.parsed_emails, name='emails'),
     path('clear-session/', views.clear_session_data, name='clear_session'),
-
     path('api/', include(router.urls)),
     path('add/', views.mailbox_add, name='add'),
     path('<int:pk>/edit/', views.mailbox_edit, name='edit'),
