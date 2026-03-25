@@ -20,5 +20,6 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.5" />
     <PackageVersion Include="Microsoft.Maui.Essentials" Version="10.0.50" />
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.2.0.2" />
+    <PackageVersion Include="Xamarin.AndroidX.Lifecycle.Common" Version="2.10.0.2" />
   </ItemGroup>
 </Project>

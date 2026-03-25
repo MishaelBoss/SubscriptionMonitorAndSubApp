@@ -22,6 +22,7 @@
     <PackageReference Include="MailKit" />
     <PackageReference Include="Microsoft.Maui.Essentials" />
     <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.Common" />
   </ItemGroup>
 
   <ItemGroup>
